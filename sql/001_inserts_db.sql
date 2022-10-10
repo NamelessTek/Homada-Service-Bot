@@ -21,9 +21,9 @@ VALUES (
         'Totalplay_79B377',
         'En la pared de la sala',
         '40A5C709RxbhaER5',
-        CONV('1', 2, 10) + 0,
-        CONV('1', 2, 10) + 0,
-        CONV('1', 2, 10) + 0,
+        0,
+        1,
+        NULL,
         '2022-10-05',
         '2022-10-05 22:57:44'
     ), (
@@ -34,9 +34,9 @@ VALUES (
         '',
         'En el cuarto principal sobre la consola de T.V',
         '',
-        CONV('1', 2, 10) + 0,
-        CONV('1', 2, 10) + 0,
-        CONV('1', 2, 10) + 0,
+        1,
+        1,
+        NULL,
         '2022-10-06',
         '2022-10-06 22:57:44'
     ), (
@@ -47,9 +47,9 @@ VALUES (
         'Totalplay-2DA8',
         'Sobre la consola de T.V',
         '2DA86F8D9PwB86yf',
-        CONV('1', 2, 10) + 0,
-        CONV('1', 2, 10) + 0,
-        CONV('1', 2, 10) + 0,
+        1,
+        1,
+        NULL,
         '2022-10-07',
         '2022-10-07 22:57:44'
     ), (
@@ -60,9 +60,9 @@ VALUES (
         'Totalplay-47A5',
         'Sobre la consola de T.V',
         '47A5F1B9JEUnvNnr',
-        CONV('0', 2, 10) + 0,
-        CONV('1', 2, 10) + 0,
-        CONV('1', 2, 10) + 0,
+        0,
+        1,
+        NULL,
         '2022-10-08',
         '2022-10-08 22:57:44'
     ), (
@@ -73,9 +73,9 @@ VALUES (
         'Totalplay-2.4G-05a0',
         'Sobre la consola de T.V',
         'Unn3Nm4n7AFeQspe',
-        CONV('0', 2, 10) + 0,
-        CONV('1', 2, 10) + 0,
-        CONV('1', 2, 10) + 0,
+        0,
+        1,
+        NULL,
         '2022-10-09',
         '2022-10-09 22:57:44'
     ), (
@@ -86,9 +86,9 @@ VALUES (
         'Totalplay-2.4G-a540',
         'Sobre la consola de T.V',
         'NcJzWccWQb6wXDKS',
-        CONV('0', 2, 10) + 0,
-        CONV('1', 2, 10) + 0,
-        CONV('1', 2, 10) + 0,
+        0,
+        1,
+        NULL,
         '2022-10-10',
         '2022-10-10 22:57:44'
     ), (
@@ -99,9 +99,9 @@ VALUES (
         'Totalplay-16A6',
         'Sobre la consola de T.V',
         '16A6c3894NU9bNts',
-        CONV('0', 2, 10) + 0,
-        CONV('1', 2, 10) + 0,
-        CONV('1', 2, 10) + 0,
+        0,
+        1,
+        NULL,
         '2022-10-11',
         '2022-10-11 22:57:44'
     ), (
@@ -112,9 +112,9 @@ VALUES (
         '',
         'Sobre la consola de T.V',
         '',
-        CONV('0', 2, 10) + 0,
-        CONV('1', 2, 10) + 0,
-        CONV('1', 2, 10) + 0,
+        0,
+        1,
+        NULL,
         '2022-10-12',
         '2022-10-12 22:57:44'
     ), (
@@ -125,9 +125,9 @@ VALUES (
         'Totalplay-2.4G-b848',
         'Sobre la consola de T.V',
         'Q3F7XpusZPQVXtT',
-        CONV('0', 2, 10) + 0,
-        CONV('1', 2, 10) + 0,
-        CONV('1', 2, 10) + 0,
+        0,
+        1,
+        NULL,
         '2022-10-13',
         '2022-10-13 22:57:44'
     ), (
@@ -138,9 +138,9 @@ VALUES (
         'Totalplay-2.4G-b848',
         'Sobre la consola de T.V',
         'Q3F7XpusZPQaVXtT',
-        CONV('0', 2, 10) + 0,
-        CONV('1', 2, 10) + 0,
-        CONV('1', 2, 10) + 0,
+        0,
+        1,
+        NULL,
         '2022-10-14',
         '2022-10-14 22:57:44'
     ), (
@@ -151,9 +151,9 @@ VALUES (
         'Totalplay-7CA7',
         'Sobre la consola de T.V',
         '7CA7CC07rDx6V3VN',
-        CONV('1', 2, 10) + 0,
-        CONV('1', 2, 10) + 0,
-        CONV('1', 2, 10) + 0,
+        1,
+        1,
+        NULL,
         '2022-10-15',
         '2022-10-15 22:57:44'
     ), (
@@ -164,9 +164,9 @@ VALUES (
         'Totalplay-7CA7',
         'Sobre la consola de T.V',
         '7CA7CC07rDx6V3VN',
-        CONV('1', 2, 10) + 0,
-        CONV('1', 2, 10) + 0,
-        CONV('1', 2, 10) + 0,
+        1,
+        1,
+        NULL,
         '2022-10-16',
         '2022-10-16 22:57:44'
     ), (
@@ -177,9 +177,9 @@ VALUES (
         'Totalplay-7CA7',
         'Sobre la consola de T.V',
         '7CA7CC07rDx6V3VN',
-        CONV('1', 2, 10) + 0,
-        CONV('1', 2, 10) + 0,
-        CONV('1', 2, 10) + 0,
+        1,
+        1,
+        NULL,
         '2022-10-17',
         '2022-10-17 22:57:44'
     ), (
@@ -190,9 +190,9 @@ VALUES (
         'Totalplay-97A5',
         'Sobre la consola de T.V',
         '97A53C03xnu8dxsj',
-        CONV('1', 2, 10) + 0,
-        CONV('1', 2, 10) + 0,
-        CONV('1', 2, 10) + 0,
+        1,
+        1,
+        NULL,
         '2022-10-18',
         '2022-10-18 22:57:44'
     ), (
@@ -203,9 +203,9 @@ VALUES (
         'Totalplay-97A5',
         'Sobre la consola de T.V',
         '97A53C03xnu8dxsj',
-        CONV('1', 2, 10) + 0,
-        CONV('1', 2, 10) + 0,
-        CONV('1', 2, 10) + 0,
+        1,
+        1,
+        NULL,
         '2022-10-19',
         '2022-10-19 22:57:44'
     ), (
@@ -216,9 +216,9 @@ VALUES (
         'Totalplay3BA5',
         'Sobre la consola de T.V',
         '3BA5B743uVU6t4UT',
-        CONV('1', 2, 10) + 0,
-        CONV('1', 2, 10) + 0,
-        CONV('1', 2, 10) + 0,
+        1,
+        1,
+        NULL,
         '2022-10-20',
         '2022-10-20 22:57:44'
     ), (
@@ -229,9 +229,9 @@ VALUES (
         'Totalplay3BA5',
         'Sobre la consola de T.V',
         '3BA5B743uVU6t4UT',
-        CONV('1', 2, 10) + 0,
-        CONV('1', 2, 10) + 0,
-        CONV('1', 2, 10) + 0,
+        1,
+        1,
+        NULL,
         '2022-10-21',
         '2022-10-21 22:57:44'
     ), (
@@ -242,9 +242,9 @@ VALUES (
         'Totalplay-C4AA',
         'Sobre la consola de T.V',
         'C4AAD168x66PXTAD',
-        CONV('0', 2, 10) + 0,
-        CONV('1', 2, 10) + 0,
-        CONV('1', 2, 10) + 0,
+        0,
+        1,
+        NULL,
         '2022-10-22',
         '2022-10-22 22:57:44'
     ), (
@@ -255,9 +255,9 @@ VALUES (
         '',
         'Sobre la consola de T.V',
         '',
-        CONV('0', 2, 10) + 0,
-        CONV('1', 2, 10) + 0,
-        CONV('1', 2, 10) + 0,
+        0,
+        1,
+        NULL,
         '2022-10-23',
         '2022-10-23 22:57:44'
     ), (
@@ -268,9 +268,9 @@ VALUES (
         'blueteleFAE2',
         'Junto al sillón',
         '03070D10',
-        CONV('0', 2, 10) + 0,
-        CONV('1', 2, 10) + 0,
-        CONV('1', 2, 10) + 0,
+        0,
+        1,
+        NULL,
         '2022-10-24',
         '2022-10-24 22:57:44'
     );

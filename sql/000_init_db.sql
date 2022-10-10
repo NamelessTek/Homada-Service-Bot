@@ -26,8 +26,20 @@ CREATE TABLE
         `Clave` text,
         `Mascotas` bit(1) NOT NULL,
         `Status` bit(1) NOT NULL,
-        `Option` bit(1),
+        `Option` INT(1) NULL,
         `Creation_date` datetime NOT NULL,
         `Last_update` timestamp NOT NULL,
         PRIMARY KEY (`ID`)
     ) ENGINE = InnoDB DEFAULT CHARSET = utf8 COLLATE utf8_general_ci;
+
+DROP TABLE IF EXISTS `Option`;
+
+CREATE TABLE
+    `Option` (
+        `ID` int(11) NOT NULL AUTO_INCREMENT,
+        `Option` int(11) NOT NULL,
+        `Value` text NOT NULL,
+        `Creation_date` datetime NOT NULL,
+        `Last_update` timestamp NOT NULL,
+        PRIMARY KEY (`ID`)
+    ) ENGINE = InnoDB DEFAULT CHARSET = utf8;
