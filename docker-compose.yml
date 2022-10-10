@@ -33,8 +33,8 @@ services:
     restart: always
     build: .
     ports:
-      - 5000:5000
+      - 5555:5000
     volumes:
-      - ./App:/homada/App
+      - ./App:/homada_bot/App
     networks:
       - app-tier

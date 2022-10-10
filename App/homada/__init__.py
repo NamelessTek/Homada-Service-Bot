@@ -28,4 +28,9 @@ def create_app(config_class=Config):
 
     app.app_context().push()
 
+    from homada.ubicacion.routes import location
+
+    app.config.from_object(Config)
+    app.register_blueprint(location)
+
     return app
