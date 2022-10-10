@@ -13,3 +13,4 @@ class Config:
     SQLALCHEMY_DATABASE_URI = "mysql://" + MYSQL_USER + ":" + \
         MYSQL_PASSWORD+"@"+MYSQL_HOST+"/"+MYSQL_DB+"?charset=utf8mb4"
     SQLALCHEMY_ECHO = False
+    SQLALCHEMY_TRACK_MODIFICATIONS = True

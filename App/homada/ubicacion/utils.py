@@ -1,7 +1,5 @@
-from homada import db
 from homada.models import Ubicacion, Option
-import flask
 
 
 def get_ubicacion(ubicacion: int) -> dict:
-    return {key: value for key, value in Ubicacion.__repr__(ubicacion).items() if value}
+    return {key: value for key, value in Ubicacion.__repr__(ubicacion).items() if ubicacion.status and value}
