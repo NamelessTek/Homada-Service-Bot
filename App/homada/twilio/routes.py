@@ -1,4 +1,5 @@
 import json
+from urllib import response
 from flask import Blueprint, request, jsonify
 from homada.ubicacion.utils import *
 from homada.twilio.utils import *
@@ -41,15 +42,12 @@ def send_message_data() -> dict:
 
 @ twilio.route('/incoming_message', methods=['GET', 'POST'])
 def incoming_message_data() -> dict:
-    ''''''
-    resp = MessagingResponse()
 
-    # Add a text message
-    msg = resp.message("Me debes un helado")
+    if request.method == 'POST':
+        response = {}
+        error, message, code = False, '', ''
+        message = incoming_message()
+        response.update({'sucess': True, 'message': message, 'message': f'{message}', 'status_code': 200, 'error': None, 'code': f'{code}'} if message and message != [{}]else {
+            'sucess': False,  'message': 'Message could not be sent', 'status_code': 400, 'error': f'{error}', 'code': f'{code}'})
 
-    # Add a picture message
-    msg.media(
-        "https://farm8.staticflickr.com/7090/6941316406_80b4d6d50e_z_d.jpg"
-    )
-
-    return str(resp)
+        return message

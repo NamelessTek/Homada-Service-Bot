@@ -8,7 +8,7 @@ from flask import request
 
 def send_message(phone_number: str, message: str, ubicacion: int = Ubicacion.id) -> dict:
     '''
-    Send message to a phone 
+    Send message to a phone
     '''
     ubicacion_data = get_ubicacion(
         Ubicacion.query.filter_by(id=ubicacion).first())
@@ -37,7 +37,13 @@ def incoming_message() -> dict:
     '''
 
     resp = MessagingResponse()
-    print('hola')
-    msg = resp.message('The Robots are coming! Head for the hills!')
 
-    return MessagingResponse().message('The Robots are coming! Head for the hills!')
+    # Add a text message
+    msg = resp.message("Me debes un helado")
+
+    # Add a picture message
+    msg.media(
+        "https://farm8.staticflickr.com/7090/6941316406_80b4d6d50e_z_d.jpg"
+    )
+
+    return str(resp)
