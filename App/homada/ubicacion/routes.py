@@ -29,8 +29,10 @@ def get_ubicacion_data() -> dict:
 
         elif 'filter_by' in json_data.keys():
             if json_data['filter_by'] == 'all':
-                data = [get_ubicacion(
-                    ubicacion) for ubicacion in Ubicacion.query.all()]
+                # do not add empty dictionaries to dataç
+                data = [get_ubicacion(ubicacion) for ubicacion in Ubicacion.query.all(
+                ) if ubicacion.status and get_ubicacion(ubicacion)]
+
                 message, code = f'{len(data)} ubicaciones found in database', 1
             else:
                 error, code = 'Invalid filter_by value', 3
@@ -44,3 +46,7 @@ def get_ubicacion_data() -> dict:
         'sucess': False,  'message': 'Ubicacion data could not be retrieved', 'status_code': 400, 'error': f'{error}', 'code': f'{code}'})
 
     return jsonify(response), response['status_code']
+
+    '''
+    Send message to a phone 
+    '''

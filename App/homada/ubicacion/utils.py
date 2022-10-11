@@ -1,4 +1,4 @@
-from homada.models import Ubicacion, Option
+from homada.models import Ubicacion
 
 
 def get_ubicacion(ubicacion: int) -> dict:

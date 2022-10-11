@@ -14,3 +14,13 @@ class Config:
         MYSQL_PASSWORD+"@"+MYSQL_HOST+"/"+MYSQL_DB+"?charset=utf8mb4"
     SQLALCHEMY_ECHO = False
     SQLALCHEMY_TRACK_MODIFICATIONS = True
+    TWILIO_ACCOUNT_SID = os.environ.get(
+        "TWILIO_ACCOUNT_SID", 'ACd88e27bf758736e26c0ca47b9b949885')
+    TWILIO_AUTH_TOKEN = os.environ.get(
+        "TWILIO_AUTH_TOKEN", '674fe0bc1d80710bfcf19a3f8dc429cd')
+    TWILIO_PHONE_NUMBER = os.environ.get(
+        "TWILIO_PHONE_NUMBER", '+14155238886')
+
+    if not TWILIO_ACCOUNT_SID or not TWILIO_AUTH_TOKEN or not TWILIO_PHONE_NUMBER:
+        raise Exception(
+            "TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN, and TWILIO_PHONE_NUMBER must be set")

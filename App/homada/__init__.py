@@ -1,3 +1,4 @@
+from http import client
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from flask_bcrypt import Bcrypt
@@ -6,12 +7,14 @@ from flask_mail import Mail
 from flask import Flask
 from homada.config import Config
 from flask_cors import CORS
+from twilio.rest import Client
 
 db = SQLAlchemy()
 bcrypt = Bcrypt()
 login_manager = LoginManager()
 login_manager.login_view = 'main.login'
 login_manager.login_message_category = 'info'
+client = Client(Config.TWILIO_ACCOUNT_SID, Config.TWILIO_AUTH_TOKEN)
 mail = Mail()
 
 
@@ -29,8 +32,10 @@ def create_app(config_class=Config):
     app.app_context().push()
 
     from homada.ubicacion.routes import location
+    from homada.twilio.routes import twilio
 
     app.config.from_object(Config)
     app.register_blueprint(location)
+    app.register_blueprint(twilio)
 
     return app
