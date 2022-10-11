@@ -18,14 +18,11 @@ def send_message_data() -> dict:
     response = {}
     error, message, code = False, '', ''
     if json_data and all(json_data.values()):
-        if 'phone_number' in json_data.keys() and isinstance(json_data['phone_number'], str):
-            if 'ubicacion' in json_data.keys():
-                # get ubicacion data
-                ubicacion = get_ubicacion(Ubicacion.query.filter_by(
-                    id=json_data['ubicacion']).first())
-                mensaje = f'Su próxima reserva es en {ubicacion["Ubicacion"]}, {ubicacion["Direccion"]}. En esta ubicación el modem es {ubicacion["Modem"]}, la clave es {ubicacion["SSID"]} y esta es la ubicación en el mapa {ubicacion["URL"]} .'
+        if ('phone_number' in json_data.keys() and isinstance(json_data['phone_number'], str) and json_data['phone_number'].startswith('whatsapp:+')
+                and 'message' in json_data.keys() and isinstance(json_data['message'], int)):
+            if 'ubicacion' in json_data.keys() and isinstance(json_data['ubicacion'], int):
                 data.append(send_message(
-                    json_data['phone_number'], mensaje))
+                    json_data['phone_number'], json_data['message'], json_data['ubicacion']))
             message, code = f'Message sent to {json_data["phone_number"]}', 2
         else:
             error, code = 'Invalid request', 4
@@ -38,13 +35,21 @@ def send_message_data() -> dict:
     return jsonify(response), response['status_code']
 
     '''
-    Send message to a phone 
+    Send message to a phone
     '''
 
 
-@twilio.route('/incoming_message', methods=['GET', 'POST'])
+@ twilio.route('/incoming_message', methods=['GET', 'POST'])
 def incoming_message_data() -> dict:
-    '''
-    Receive incoming messages
-    '''
-    return incoming_message()
+    ''''''
+    resp = MessagingResponse()
+
+    # Add a text message
+    msg = resp.message("Me debes un helado")
+
+    # Add a picture message
+    msg.media(
+        "https://farm8.staticflickr.com/7090/6941316406_80b4d6d50e_z_d.jpg"
+    )
+
+    return str(resp)
