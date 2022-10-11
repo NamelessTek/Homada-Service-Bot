@@ -19,10 +19,10 @@ def send_message_data() -> dict:
     error, message, code = False, '', ''
     if json_data and all(json_data.values()):
         if 'phone_number' in json_data.keys() and isinstance(json_data['phone_number'], str):
-            if 'send_message' in json_data.keys():
+            if 'ubicacion' in json_data.keys():
                 # get ubicacion data
                 ubicacion = get_ubicacion(Ubicacion.query.filter_by(
-                    id=json_data['send_message']).first())
+                    id=json_data['ubicacion']).first())
                 mensaje = f'Su próxima reserva es en {ubicacion["Ubicacion"]}, {ubicacion["Direccion"]}. En esta ubicación el modem es {ubicacion["Modem"]}, la clave es {ubicacion["SSID"]} y esta es la ubicación en el mapa {ubicacion["URL"]} .'
                 data.append(send_message(
                     json_data['phone_number'], mensaje))

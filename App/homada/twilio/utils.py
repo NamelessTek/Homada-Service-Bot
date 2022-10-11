@@ -1,5 +1,4 @@
 from ast import Raise
-from twilio.rest import Client
 from twilio.twiml.messaging_response import MessagingResponse
 from homada import client
 from homada.config import Config
@@ -14,7 +13,7 @@ def send_message(phone_number: str, message: str) -> dict:
         try:
             message = client.messages.create(
                 to=phone_number,
-                from_='whatsapp:+14155238886',
+                from_=Config.TWILIO_PHONE_NUMBER,
                 body=message
             )
         except Exception:
