@@ -45,17 +45,20 @@ CREATE TABLE
     ) ENGINE = InnoDB DEFAULT CHARSET = utf8;
 
 DROP TABLE IF EXISTS `Clientes`;
-CREATE TABLE `Clientes` (
-  `ID` int(11) NOT NULL AUTO_INCREMENT,
-  `Name` text NOT NULL,
-  `Last_name` text NOT NULL,
-  `Phone` text NOT NULL,
-  `No.Reserva` text NOT NULL,
-  `Status` int(11) NOT NULL,
-  `Option` int(11) NOT NULL,
-  `Creation_date` date NOT NULL,
-  `Last_update` timestamp NOT NULL,
-  PRIMARY KEY (`ID`),
-  KEY `Option` (`Option`),
-  CONSTRAINT `Clientes_ibfk_1` FOREIGN KEY (`Option`) REFERENCES `Option` (`ID`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+DROP TABLE IF EXISTS `Clientes`;
+
+CREATE TABLE
+    `Clientes` (
+        `ID` int(11) NOT NULL AUTO_INCREMENT,
+        `Name` text NOT NULL,
+        `Last_name` text NOT NULL,
+        `Phone` text NOT NULL,
+        `Reservation` text NOT NULL,
+        `Arrival` date NOT NULL,
+        `Departure` date NOT NULL,
+        `Status` int(11) NOT NULL,
+        `Creation_date` date NOT NULL,
+        `Last_update` timestamp NOT NULL,
+        PRIMARY KEY (`ID`)
+    ) ENGINE = InnoDB DEFAULT CHARSET = utf8;

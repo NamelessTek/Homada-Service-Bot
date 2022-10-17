@@ -48,6 +48,30 @@ class Option(db.Model):
         db.TIMESTAMP, nullable=False, default=datetime.now, onupdate=datetime.now)
 
     def __repr__(self):
-        rows = {"ID": self.id, "Option": self.option, "Value": self.value,
+        return {"ID": self.id, "Option": self.option, "Value": self.value,
                 "Creation Date": self.creation_date, "Last Update": self.last_update}
-        return rows
+
+
+@dataclass()
+class Client(db.Model):
+    '''
+    Client Model for storing client related details 
+    '''
+    __tablename__ = 'Client'
+
+    id: int = db.Column(db.Integer, primary_key=True,
+                        autoincrement=True, nullable=False)
+    name: str = db.Column(db.String(280), nullable=False)
+    last_name: str = db.Column(db.String(280), nullable=False)
+    phone: str = db.Column(db.String(280), nullable=False)
+    reservation: str = db.Column(db.String(280), nullable=False)
+    arrvial = db.Column(db.DateTime, nullable=False)
+    departure = db.Column(db.DateTime, nullable=False)
+    status = db.Column(db.Boolean, nullable=False)
+    creation_date: str = db.Column(
+        db.DateTime, nullable=False, default=datetime.now)
+    last_update: str = db.Column(
+        db.TIMESTAMP, nullable=False, default=datetime.now, onupdate=datetime.now)
+
+    def __repr__(self):
+        return {"ID": self.id, "Name": self.name, "Last Name": self.last_name, "Phone": self.phone, "Reservation": self.reservation, "Arrival": self.arrvial, "Departure": self.departure, "Status": self.status, "Creation Date": self.creation_date, "Last Update": self.last_update}
