@@ -85,21 +85,14 @@ def incoming_message() -> str:
     incoming_message = request.values.get('Body', '').lower()
     # Get the phone number of the person sending the text message
     phone_number = request.values.get('From', None).replace('whatsapp:', '')
-    if validate_phone_number(phone_number):
-
-        # Get the message the user sent our Twilio number
-        resp = MessagingResponse()
-        # Determine the right reply for this message
-        # msg = resp.message()
-        # Query the database for the phone number
-        if incoming_message:
-            # deconcatenate the list of messages and send them as different messages
-            for message in conversations(phone_number, incoming_message):
-                msg = resp.message(message)
-
-        else:
-            pass
+    resp = MessagingResponse()
+    # if the phone number is valid
+    if validate_phone_number(phone_number) and incoming_message:
+        # Loop over the messages and respond to each one
+        for message in conversations(phone_number, incoming_message):
+            resp.message(message)
     else:
-        msg.body("Lo sentimos, no se encuentra registrado en nuestro sistema. Por favor comuniquese con nosotros para poder ayudarlo.")
+        resp.message(
+            'Lo sentimos, no pudimos validar tu numero de telefono 😟')
 
     return str(resp)
