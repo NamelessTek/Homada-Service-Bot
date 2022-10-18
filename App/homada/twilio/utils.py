@@ -1,12 +1,15 @@
-from homada.models import Ubicacion
+from queue import Empty
+from typing import List
+from homada.models import Ubicacion, Client
 from homada.ubicacion.utils import get_ubicacion
 from twilio.twiml.messaging_response import MessagingResponse
-from homada import client
+from homada import client as twilio_client
 from homada.config import Config
-from flask import request
+from flask import Flask, request
+import phonenumbers
 
 
-def send_message(phone_number: str, message: str, ubicacion: int = Ubicacion.id) -> dict:
+def send_location_message(phone_number: str, message: str, ubicacion: int = Ubicacion.id) -> dict:
     '''
     Send message to a phone
     '''
@@ -19,7 +22,7 @@ def send_message(phone_number: str, message: str, ubicacion: int = Ubicacion.id)
             case _:
                 message = f'Oops! Algo salio mal, por favor intente mas tarde'
         try:
-            message = client.messages.create(
+            message = twilio_client.messages.create(
                 to=phone_number,
                 from_=Config.TWILIO_PHONE_NUMBER,
                 body=message,
@@ -31,19 +34,72 @@ def send_message(phone_number: str, message: str, ubicacion: int = Ubicacion.id)
         pass
 
 
-def incoming_message() -> dict:
+def validate_phone_number(phone_number: str) -> bool:
+    '''
+    Validate phone number
+    '''
+    try:
+        phone = phonenumbers.parse(phone_number.strip(), None)
+        client = Client.query.filter_by(phone=phone_number).first()
+        return phonenumbers.is_valid_number(phone) and client is not None
+    except Exception:
+        return False
+
+
+def conversations(phone_number: str, incoming_message: str) -> list:
+    '''
+    Conversations with the user
+    '''
+    messages = list()
+    client = Client.query.filter_by(phone=phone_number).first()
+
+    if incoming_message:
+        match incoming_message:
+            case 'hola':
+                messages = [
+                    f'¡Hola {client.name}! Gracias por hacer tu reservación con nosotros 😃', 'cómo podemos ayudarte?']
+
+            case 'adios':
+                messages.append(
+                    f'¡Adios {client.name}! Esperamos verte pronto 😃')
+            case 'menu':
+                messages.append(
+                    f'¡Hola {client.name}! Estos son los servicios que ofrecemos: \n 1. Ubicacion \n 2. Reservacion \n 3. Cancelar reservacion \n 4. Salir')
+            case _:
+                messages.append(
+                    f'No pude entender tu respuesta 😟 Inténtalo nuevamente 👇🏼 o escribe menu para desplegar las opciones con las que podemos apoyarte.')
+
+        # return the list of messages in different messages
+
+        return messages
+
+    else:
+        pass
+
+
+def incoming_message() -> str:
     '''
     Receive incoming messages
     '''
+    # Get the message the user sent our Twilio number
+    incoming_message = request.values.get('Body', '').lower()
+    # Get the phone number of the person sending the text message
+    phone_number = request.values.get('From', None).replace('whatsapp:', '')
+    if validate_phone_number(phone_number):
 
-    resp = MessagingResponse()
+        # Get the message the user sent our Twilio number
+        resp = MessagingResponse()
+        # Determine the right reply for this message
+        # msg = resp.message()
+        # Query the database for the phone number
+        if incoming_message:
+            # deconcatenate the list of messages and send them as different messages
+            for message in conversations(phone_number, incoming_message):
+                msg = resp.message(message)
 
-    # Add a text message
-    msg = resp.message("Me debes un helado")
-
-    # Add a picture message
-    msg.media(
-        "https://farm8.staticflickr.com/7090/6941316406_80b4d6d50e_z_d.jpg"
-    )
+        else:
+            pass
+    else:
+        msg.body("Lo sentimos, no se encuentra registrado en nuestro sistema. Por favor comuniquese con nosotros para poder ayudarlo.")
 
     return str(resp)

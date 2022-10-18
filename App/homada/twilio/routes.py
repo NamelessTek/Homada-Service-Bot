@@ -22,7 +22,7 @@ def send_message_data() -> dict:
         if ('phone_number' in json_data.keys() and isinstance(json_data['phone_number'], str) and json_data['phone_number'].startswith('whatsapp:+')
                 and 'message' in json_data.keys() and isinstance(json_data['message'], int)):
             if 'ubicacion' in json_data.keys() and isinstance(json_data['ubicacion'], int):
-                data.append(send_message(
+                data.append(send_location_message(
                     json_data['phone_number'], json_data['message'], json_data['ubicacion']))
             message, code = f'Message sent to {json_data["phone_number"]}', 2
         else:
@@ -41,7 +41,7 @@ def send_message_data() -> dict:
 
 
 @ twilio.route('/incoming_message', methods=['GET', 'POST'])
-def incoming_message_data() -> dict:
+def incoming_message_data() -> str:
 
     if request.method == 'POST':
         response = {}

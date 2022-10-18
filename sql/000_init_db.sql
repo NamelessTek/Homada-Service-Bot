@@ -44,12 +44,12 @@ CREATE TABLE
         PRIMARY KEY (`ID`)
     ) ENGINE = InnoDB DEFAULT CHARSET = utf8;
 
-DROP TABLE IF EXISTS `Clientes`;
+DROP TABLE IF EXISTS `Client`;
 
-DROP TABLE IF EXISTS `Clientes`;
+DROP TABLE IF EXISTS `Client`;
 
 CREATE TABLE
-    `Clientes` (
+    `Client` (
         `ID` int(11) NOT NULL AUTO_INCREMENT,
         `Name` text NOT NULL,
         `Last_name` text NOT NULL,
@@ -61,4 +61,18 @@ CREATE TABLE
         `Creation_date` date NOT NULL,
         `Last_update` timestamp NOT NULL,
         PRIMARY KEY (`ID`)
+    ) ENGINE = InnoDB DEFAULT CHARSET = utf8;
+
+DROP TABLE IF EXISTS `Relation_table_client_ubicacion`;
+
+CREATE TABLE
+    `Relation_table_client_ubicacion` (
+        `ID` int(11) NOT NULL AUTO_INCREMENT,
+        `client_id` int(11) NOT NULL,
+        `ubicacion_id` int(11) NOT NULL,
+        PRIMARY KEY (`ID`),
+        KEY `client_id` (`client_id`),
+        KEY `ubicacion_id` (`ubicacion_id`),
+        CONSTRAINT `Relation_table_client_ubicacion_ibfk_1` FOREIGN KEY (`client_id`) REFERENCES `Client` (`ID`),
+        CONSTRAINT `Relation_table_client_ubicacion_ibfk_2` FOREIGN KEY (`ubicacion_id`) REFERENCES `Ubicacion` (`ID`)
     ) ENGINE = InnoDB DEFAULT CHARSET = utf8;

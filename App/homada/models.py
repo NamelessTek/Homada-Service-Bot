@@ -65,7 +65,7 @@ class Client(db.Model):
     last_name: str = db.Column(db.String(280), nullable=False)
     phone: str = db.Column(db.String(280), nullable=False)
     reservation: str = db.Column(db.String(280), nullable=False)
-    arrvial = db.Column(db.DateTime, nullable=False)
+    arrival = db.Column(db.DateTime, nullable=False)
     departure = db.Column(db.DateTime, nullable=False)
     status = db.Column(db.Boolean, nullable=False)
     creation_date: str = db.Column(

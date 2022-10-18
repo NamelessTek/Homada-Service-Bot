@@ -1,5 +1,5 @@
 INSERT INTO
-    `Clientes` (
+    `Client` (
         `ID`,
         `Name`,
         `Last_name`,
