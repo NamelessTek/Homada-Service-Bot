@@ -1,6 +1,6 @@
 from homada.models import Ubicacion, Client
 from homada.ubicacion.utils import get_ubicacion
-from homada.clientes.utils import get_client, get_client_reservation
+from homada.clientes.utils import get_client_reservation
 from twilio.twiml.messaging_response import MessagingResponse
 from homada import client as twilio_client
 from homada.config import Config
@@ -49,10 +49,9 @@ def conversations(phone_number: str, incoming_message: str) -> list:
     '''
     Conversations with the user
     '''
-    messages = list()
+    messages = []
     client = Client.query.filter_by(phone=phone_number).first()
     reservation = get_client_reservation(client)
-    reservation_data = []
 
     if incoming_message:
         match incoming_message:
@@ -60,14 +59,16 @@ def conversations(phone_number: str, incoming_message: str) -> list:
                 messages.append(
                     f'¡Hola {client.name}! Gracias por hacer tu reservación con nosotros 😃')
                 if len(reservation) > 1:
-                    messages = [f'Tienes {len(reservation)} reservaciones',
+                    messages = [f'{client.name} tienes {len(reservation)} reservaciones',
                                 f'¿De que ubicacion quieres saber la informacion?']
-                    reservation_data = [
-                        f'{index + 1}. {ubicacion["Ubicacion"]}' for index, ubicacion in enumerate(reservation)]
-                    messages.extend(reservation_data)
+                    messages.extend(
+                        (f'{index + 1}. {ubicacion["Ubicacion"]}' for index, ubicacion in enumerate(reservation)))
+                elif len(reservation) == 1:
+                    messages.append(
+                        f'{client.name}, tu proxima reservacion es en {reservation[0]["Ubicacion"]}')
                 else:
                     messages.append(
-                        f'Tu proxima reservacion es en {reservation[0]["Ubicacion"]}')
+                        f'{client.name}, no tienes reservaciones, por favor haz una reservacion')
             case 'adios':
                 messages.append(
                     f'¡Adios {client.name}! Esperamos verte pronto 😃')
@@ -80,7 +81,6 @@ def conversations(phone_number: str, incoming_message: str) -> list:
 
     else:
         pass
-
     return messages
 
 

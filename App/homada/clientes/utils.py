@@ -17,8 +17,5 @@ def get_client_reservation(client: Client) -> List[dict]:
     Get client reservation data
     '''
     client_data = Client.query.filter_by(id=client.id).first()
-
-    #
-
     return [get_ubicacion(
         ubicacion) for ubicacion in client_data.ubicaciones if ubicacion.status]
