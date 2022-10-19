@@ -1,5 +1,3 @@
-from queue import Empty
-from typing import List
 from homada.models import Ubicacion, Client
 from homada.ubicacion.utils import get_ubicacion
 from twilio.twiml.messaging_response import MessagingResponse
@@ -58,7 +56,6 @@ def conversations(phone_number: str, incoming_message: str) -> list:
             case 'hola':
                 messages = [
                     f'¡Hola {client.name}! Gracias por hacer tu reservación con nosotros 😃', 'cómo podemos ayudarte?']
-
             case 'adios':
                 messages.append(
                     f'¡Adios {client.name}! Esperamos verte pronto 😃')
@@ -69,12 +66,10 @@ def conversations(phone_number: str, incoming_message: str) -> list:
                 messages.append(
                     f'No pude entender tu respuesta 😟 Inténtalo nuevamente 👇🏼 o escribe menu para desplegar las opciones con las que podemos apoyarte.')
 
-        # return the list of messages in different messages
-
-        return messages
-
     else:
         pass
+
+    return messages
 
 
 def incoming_message() -> str:
