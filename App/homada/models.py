@@ -2,6 +2,7 @@ from optparse import Option
 from homada import db
 from dataclasses import dataclass
 from datetime import datetime
+from homada.relations import *
 
 
 @dataclass
@@ -73,5 +74,11 @@ class Client(db.Model):
     last_update: str = db.Column(
         db.TIMESTAMP, nullable=False, default=datetime.now, onupdate=datetime.now)
 
+    # Child relationships
+    ubicacion = db.relationship('Ubicacion', secondary=Relation_table_client_ubicacion,
+                                backref=db.backref('client_ubicacion', lazy='dynamic'))
+
     def __repr__(self):
-        return {"ID": self.id, "Name": self.name, "Last Name": self.last_name, "Phone": self.phone, "Reservation": self.reservation, "Arrival": self.arrvial, "Departure": self.departure, "Status": self.status, "Creation Date": self.creation_date, "Last Update": self.last_update}
+        return {"ID": self.id, "Name": self.name, "Last Name": self.last_name, "Phone": self.phone,
+                "Reservation": self.reservation, "Arrival": self.arrival, "Departure": self.departure,
+                "Status": self.status, "Creation Date": self.creation_date, "Last Update": self.last_update}

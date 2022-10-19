@@ -55,7 +55,7 @@ def conversations(phone_number: str, incoming_message: str) -> list:
         match incoming_message:
             case 'hola':
                 messages = [
-                    f'¡Hola {client.name}! Gracias por hacer tu reservación con nosotros 😃', 'cómo podemos ayudarte?']
+                    f'¡Hola {client.name}! Gracias por hacer tu reservación con nosotros 😃', f'Tu resevación es en ']
             case 'adios':
                 messages.append(
                     f'¡Adios {client.name}! Esperamos verte pronto 😃')
