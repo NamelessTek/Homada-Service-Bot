@@ -33,9 +33,11 @@ def create_app(config_class=Config):
 
     from homada.ubicacion.routes import location
     from homada.twilio.routes import twilio
+    from homada.clientes.routes import client
 
     app.config.from_object(Config)
     app.register_blueprint(location)
     app.register_blueprint(twilio)
+    app.register_blueprint(client)
 
     return app

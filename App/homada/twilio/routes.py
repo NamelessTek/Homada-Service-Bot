@@ -1,5 +1,3 @@
-import json
-from urllib import response
 from flask import Blueprint, request, jsonify
 from homada.ubicacion.utils import *
 from homada.twilio.utils import *
