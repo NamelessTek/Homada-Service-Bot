@@ -75,10 +75,11 @@ class Client(db.Model):
         db.TIMESTAMP, nullable=False, default=datetime.now, onupdate=datetime.now)
 
     # Child relationships
-    ubicacion = db.relationship('Ubicacion', secondary=Relation_table_client_ubicacion,
-                                backref=db.backref('client_ubicacion', lazy='dynamic'))
+    ubicaciones = db.relationship('Ubicacion', secondary=Relation_table_client_ubicacion,
+                                  backref=db.backref('client_ubicacion', lazy='dynamic'))
 
     def __repr__(self):
         return {"ID": self.id, "Name": self.name, "Last Name": self.last_name, "Phone": self.phone,
                 "Reservation": self.reservation, "Arrival": self.arrival, "Departure": self.departure,
-                "Status": self.status, "Creation Date": self.creation_date, "Last Update": self.last_update}
+                "Status": self.status, "Creation Date": self.creation_date, "Last Update": self.last_update,
+                "Ubicaciones": [ubicacion.__repr__() for ubicacion in self.ubicaciones if ubicacion.status]}
