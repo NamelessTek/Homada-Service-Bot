@@ -1,5 +1,6 @@
 from asyncio import wait_for
 from multiprocessing.connection import wait
+from tkinter import Menu
 from urllib import response
 from homada.models import Ubicacion, Client
 from homada.ubicacion.utils import get_ubicacion
@@ -58,9 +59,8 @@ def conversations(phone_number: str, incoming_message: str) -> list:
     client = Client.query.filter_by(phone=phone_number).first()
     reservation = get_client_reservation(client)
 
-    # response = request.values.get('Body', '').lower()
-
     if incoming_message:
+        response = request.values.get('Body', '').lower()
         match incoming_message:
 
             case 'hola':
@@ -84,19 +84,21 @@ def conversations(phone_number: str, incoming_message: str) -> list:
             case 'menu':
                 messages.append(
                     f'¡Hola {client.name}! Estos son los servicios que ofrecemos: \n 1. Ubicacion \n 2. Reservacion \n 3. Cancelar reservacion \n 4. Salir')
-                response = request.values.get('Body', '').lower()
+
             case _:
                 messages.append(
                     f'No pude entender tu respuesta 😟 Inténtalo nuevamente 👇🏼 o escribe menu para desplegar las opciones con las que podemos apoyarte.')
         if response:
-            match response:
-                case '1':
-                    messages.clear()
-                    messages.append(Menu(phone_number, 1))
-                case _:
-                    f'No pude entender tu respuesta 😟 Inténtalo nuevamente 👇🏼 o escribe menu para desplegar las opciones con las que podemos apoyarte.'
+            # if the user selected an option from the ubication menu send the location data
+            if response.isdigit() and int(response) <= len(reservation):
+                messages.clear()
+                messages.append(
+                    f'La ubicacion se encuentra en {reservation[int(response) - 1]["Ubicacion"]}, aquí está el link del mapa {reservation[int(response) - 1]["URL"]}')
+            else:
+                pass
         else:
-            pass
+            messages.append(
+                f'Oops! Algo salio mal, por favor intente mas tarde')
     else:
         pass
         # only send the message if the user typed menu
@@ -135,6 +137,8 @@ def Menu(phone_number: str, option: int) -> str:
         match option:
             case 1:
                 menu = f'¿De qué ubicación quieres saber la informacion?'
+            case 2:
+                menu = f'Por favor dame tu número de reservación'
             case _:
                 menu = f'Oops! Algo salio mal, por favor intente mas tarde'
 
