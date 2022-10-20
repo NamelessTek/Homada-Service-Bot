@@ -6,6 +6,18 @@ from homada.ubicacion.utils import *
 twilio = Blueprint('twilio', __name__)
 
 
+@twilio.route('/', methods=['GET', 'POST'])
+def status():
+    # get status of the app
+    message = {
+        'status': 'ok',
+        'message': 'App is running',
+        'port': 5555,
+        'app': 'homada'
+    }
+    return jsonify(message), 200
+
+
 @twilio.route('/send_message', methods=['GET', 'POST'])
 def send_message_data() -> dict:
     '''
