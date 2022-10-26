@@ -1,42 +1,12 @@
-from asyncio import wait_for
-from multiprocessing.connection import wait
-from tkinter import Menu
-from urllib import response
-from homada.models import Ubicacion, Client
+from homada.models import Ubicacion, Client, Booking
 from homada.ubicacion.utils import get_ubicacion
-from homada.clientes.utils import get_client_reservation
+from homada.reservaciones.utils import get_booking
 from twilio.twiml.messaging_response import MessagingResponse
 from homada import client as twilio_client
 from homada.config import Config
 from flask import Flask, request
 import phonenumbers
-import asyncio
 import time
-
-
-def send_location_message(phone_number: str, message: str, ubicacion: int = Ubicacion.id) -> dict:
-    '''
-    Send message to a phone
-    '''
-    ubicacion_data = get_ubicacion(
-        Ubicacion.query.filter_by(id=ubicacion).first())
-    if phone_number and message:
-        match message:
-            case 1:
-                message = f'La ubicacion se encuentra en {ubicacion_data["Ubicacion"]}'
-            case _:
-                message = f'Oops! Algo salio mal, por favor intente mas tarde'
-        try:
-            message = twilio_client.messages.create(
-                to=phone_number,
-                from_=Config.TWILIO_PHONE_NUMBER,
-                body=message,
-            )
-        except Exception:
-            return {'sucess': False, 'message': 'Message could not be sent', 'status_code': 400, 'error': True, 'code': '4'}
-
-    else:
-        pass
 
 
 def validate_phone_number(phone_number: str) -> bool:
@@ -57,23 +27,28 @@ def conversations(phone_number: str, incoming_message: str) -> list:
     '''
     messages = []
     client = Client.query.filter_by(phone=phone_number).first()
-    reservation = get_client_reservation(client)
+    booking = get_booking(
+        Booking.query.filter_by(cliente=client.id).first())
+    ubicacion = get_ubicacion(
+        Ubicacion.query.filter_by(id=booking['Ubicacion']).first())
 
     if incoming_message:
         response = request.values.get('Body', '').lower()
         match incoming_message:
             case 'hola':
-                messages.append(
-                    f'¡Hola {client.name}! Gracias por hacer tu reservación con nosotros 😃')
-                if len(reservation) > 1:
-                    messages = [f'{client.name} tienes {len(reservation)} reservaciones',
-                                f'¿De qué ubicación quieres saber la informacion?']
+                messages = [
+                    f'¡Hola {client.name}! Hola bienvenido a Homada, muchas gracias por tu preferencia']
+                # if len(booking) > 1:
+                #     messages = [f'{client.name} tienes {len(booking)} reservaciones',
+                #                 f'¿De qué ubicación quieres saber la informacion?']
+                #     messages.extend(
+                #         f'{index + 1}. {ubicacion["Ubicacion"]}' for index, ubicacion in enumerate(booking))
+                if booking:
                     messages.extend(
-                        f'{index + 1}. {ubicacion["Ubicacion"]}' for index, ubicacion in enumerate(reservation))
-                    time.sleep(1)
-                elif len(reservation) == 1:
-                    messages.append(
-                        f'{client.name}, tu proxima reservacion es en {reservation[0]["Ubicacion"]}')
+                        [f'{client.name}, para tu entradad el día {booking["Arrival"].strftime("%d/%m/%Y")}, queremos compartirte algunos datos. La hora de entrada es a las {booking["Arrival Time"].strftime("%H:%M")}. Sabemos que puedes necesitar conexión a internet, la red es {ubicacion["SSID"]} y el password es {ubicacion["Clave"]}.',
+                         f'Para tu facilidad, el link de navegación es el siguiente: {ubicacion["URL"]}.',
+                         'En caso de necesitar apoyo por favor escribe en el chat la palabra "menú"'])
+
                 else:
                     messages.append(
                         f'{client.name}, no tienes reservaciones, por favor haz una reservacion')
@@ -89,10 +64,10 @@ def conversations(phone_number: str, incoming_message: str) -> list:
                     f'No pude entender tu respuesta 😟 Inténtalo nuevamente 👇🏼 o escribe menu para desplegar las opciones con las que podemos apoyarte.')
         if response:
             # if the user selected an option from the ubication menu send the location data
-            if response.isdigit() and int(response) <= len(reservation):
+            if response.isdigit() and int(response) <= len(booking):
                 messages.clear()
                 messages.append(
-                    f'La ubicacion se encuentra en {reservation[int(response) - 1]["Ubicacion"]}, aquí está el link del mapa {reservation[int(response) - 1]["URL"]}')
+                    f'La ubicacion se encuentra en {booking[int(response) - 1]["Ubicacion"]}, aquí está el link del mapa {booking[int(response) - 1]["URL"]}')
             else:
                 pass
         else:
@@ -100,7 +75,6 @@ def conversations(phone_number: str, incoming_message: str) -> list:
                 f'Oops! Algo salio mal, por favor intente mas tarde')
     else:
         pass
-        # only send the message if the user typed menu
 
     return messages
 
@@ -126,24 +100,6 @@ def incoming_message() -> str:
     return str(resp)
 
 
-def Menu(phone_number: str, option: int) -> str:
-    '''
-    Conversation response
-    '''
-    client = Client.query.filter_by(phone=phone_number).first()
-
-    if option:
-        match option:
-            case 1:
-                menu = f'¿De qué ubicación quieres saber la informacion?'
-            case 2:
-                menu = f'Por favor dame tu número de reservación'
-            case _:
-                menu = f'Oops! Algo salio mal, por favor intente mas tarde'
-
-    return menu
-
-
 def send_location_data(option: int) -> str:
     '''
     Send location data
@@ -158,12 +114,26 @@ def send_location_data(option: int) -> str:
 
     return location_data["Ubicacion"]
 
+# def send_location_message(phone_number: str, message: str, ubicacion: int = Ubicacion.id) -> dict:
+#     '''
+#     Send message to a phone
+#     '''
+#     ubicacion_data = get_ubicacion(
+#         Ubicacion.query.filter_by(id=ubicacion).first())
+#     if phone_number and message:
+#         match message:
+#             case 1:
+#                 message = f'La ubicacion se encuentra en {ubicacion_data["Ubicacion"]}'
+#             case _:
+#                 message = f'Oops! Algo salio mal, por favor intente mas tarde'
+#         try:
+#             message = twilio_client.messages.create(
+#                 to=phone_number,
+#                 from_=Config.TWILIO_PHONE_NUMBER,
+#                 body=message,
+#             )
+#         except Exception:
+#             return {'sucess': False, 'message': 'Message could not be sent', 'status_code': 400, 'error': True, 'code': '4'}
 
-def wait_for_user_response() -> int:
-    '''
-    Wait for user response
-    '''
-    # Wait for the user to select an option
-    selected_option = request.values.get('Body', '').lower()
-
-    return selected_option
+#     else:
+#         pass

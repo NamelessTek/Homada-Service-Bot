@@ -4,9 +4,7 @@ INSERT INTO
         `Name`,
         `Last_name`,
         `Phone`,
-        `Reservation`,
-        `Arrival`,
-        `Departure`,
+        `Email`,
         `Status`,
         `Creation_date`,
         `Last_update`
@@ -16,10 +14,8 @@ VALUES (
         'Luis',
         'Cedillo Maldonado',
         '+5215571967146',
-        '00001',
-        '2022-10-26 13:21:19',
-        '2022-10-30 11:21:19',
+        'luisitocedillo@gmail.com',
         1,
         '2022-10-26',
-        '2022-10-26 00:21:19'
+        '2022-10-26 01:35:52'
     );

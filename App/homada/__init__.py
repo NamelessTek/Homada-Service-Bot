@@ -1,4 +1,3 @@
-from http import client
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from flask_bcrypt import Bcrypt
@@ -34,10 +33,12 @@ def create_app(config_class=Config):
     from homada.ubicacion.routes import location
     from homada.twilio.routes import twilio
     from homada.clientes.routes import client
+    from homada.reservaciones.routes import booking
 
     app.config.from_object(Config)
     app.register_blueprint(location)
     app.register_blueprint(twilio)
     app.register_blueprint(client)
+    app.register_blueprint(booking)
 
     return app

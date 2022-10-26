@@ -1,4 +1,3 @@
-from optparse import Option
 from homada import db
 from dataclasses import dataclass
 from datetime import datetime
@@ -22,7 +21,7 @@ class Ubicacion(db.Model):
     modem: str = db.Column(db.String(280), nullable=True)
     mascotas: bool = db.Column(db.Boolean, nullable=False)
     status: bool = db.Column(db.Boolean, nullable=False)
-    option: Option = db.Column(db.String(280), nullable=True)
+    option: str = db.Column(db.String(280), nullable=True)
     creation_date: str = db.Column(
         db.DateTime, nullable=False, default=datetime.now)
     last_update: str = db.Column(
@@ -56,7 +55,7 @@ class Option(db.Model):
 @dataclass()
 class Client(db.Model):
     '''
-    Client Model for storing client related details 
+    Client Model for storing client related data 
     '''
     __tablename__ = 'Client'
 
@@ -65,9 +64,6 @@ class Client(db.Model):
     name: str = db.Column(db.String(280), nullable=False)
     last_name: str = db.Column(db.String(280), nullable=False)
     phone: str = db.Column(db.String(280), nullable=False)
-    reservation: str = db.Column(db.String(280), nullable=False)
-    arrival = db.Column(db.DateTime, nullable=False)
-    departure = db.Column(db.DateTime, nullable=False)
     status = db.Column(db.Boolean, nullable=False)
     creation_date: str = db.Column(
         db.DateTime, nullable=False, default=datetime.now)
@@ -79,7 +75,34 @@ class Client(db.Model):
                                   backref=db.backref('client_ubicacion', lazy='dynamic'))
 
     def __repr__(self):
-        return {"ID": self.id, "Name": self.name, "Last Name": self.last_name, "Phone": self.phone,
-                "Reservation": self.reservation, "Arrival": self.arrival, "Departure": self.departure,
-                "Status": self.status, "Creation Date": self.creation_date, "Last Update": self.last_update,
-                "Ubicaciones": [ubicacion.__repr__() for ubicacion in self.ubicaciones if ubicacion.status]}
+        return {"ID": self.id, "Name": self.name, "Last Name": self.last_name, "Phone": self.phone, "Status": self.status,
+                "Creation Date": self.creation_date, "Last Update": self.last_update}
+
+
+@dataclass()
+class Booking(db.Model):
+    '''
+    Booking Model for storing client-location booking related data
+    '''
+    __tablename__ = 'Booking'
+    id: int = db.Column(db.Integer, primary_key=True,
+                        autoincrement=True, nullable=False)
+    booking_number: str = db.Column(db.String(280), nullable=False)
+    arrival: str = db.Column(db.Date, nullable=False)
+    arrival_time: str = db.Column(db.Time, nullable=False)
+    departure: str = db.Column(db.Date, nullable=False)
+    departure_time: str = db.Column(db.Time, nullable=False)
+    ubicacion: int = db.Column(db.Integer, db.ForeignKey(
+        'Ubicacion.id'), nullable=False)
+    cliente: int = db.Column(db.Integer, db.ForeignKey(
+        'Client.id'), nullable=False)
+    creation_date: str = db.Column(
+        db.DateTime, nullable=False, default=datetime.now)
+    last_update: str = db.Column(
+        db.TIMESTAMP, nullable=False, default=datetime.now, onupdate=datetime.now)
+    status: bool = db.Column(db.Boolean, nullable=False)
+
+    def __repr__(self):
+        return {"ID": self.id, "Booking Number": self.booking_number, "Arrival": self.arrival, "Arrival Time": self.arrival_time,
+                "Departure": self.departure, "Departure Time": self.departure_time, "Ubicacion": self.ubicacion,
+                "Client": self.cliente, "Creation Date": self.creation_date, "Last Update": self.last_update, "Status": self.status}

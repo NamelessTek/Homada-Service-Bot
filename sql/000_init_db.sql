@@ -54,25 +54,31 @@ CREATE TABLE
         `Name` text NOT NULL,
         `Last_name` text NOT NULL,
         `Phone` text NOT NULL,
-        `Reservation` text NOT NULL,
-        `Arrival` datetime NOT NULL,
-        `Departure` datetime NOT NULL,
+        `Email` text NOT NULL,
         `Status` int(11) NOT NULL,
         `Creation_date` date NOT NULL,
         `Last_update` timestamp NOT NULL,
         PRIMARY KEY (`ID`)
     ) ENGINE = InnoDB DEFAULT CHARSET = utf8;
 
-DROP TABLE IF EXISTS `Relation_table_client_ubicacion`;
+DROP TABLE IF EXISTS `Booking`;
 
 CREATE TABLE
-    `Relation_table_client_ubicacion` (
+    `Booking` (
         `ID` int(11) NOT NULL AUTO_INCREMENT,
-        `client_id` int(11) NOT NULL,
-        `ubicacion_id` int(11) NOT NULL,
+        `Booking_number` text NOT NULL,
+        `Arrival` date NOT NULL,
+        `Arrival_time` time NOT NULL,
+        `Departure` date NOT NULL,
+        `Departure_time` time NOT NULL,
+        `Ubicacion` int(11) NOT NULL,
+        `Cliente` int(11) NOT NULL,
+        `Creation_date` datetime NOT NULL,
+        `Last_update` timestamp NOT NULL,
+        `Status` int(11) NOT NULL,
         PRIMARY KEY (`ID`),
-        KEY `client_id` (`client_id`),
-        KEY `ubicacion_id` (`ubicacion_id`),
-        CONSTRAINT `Relation_table_client_ubicacion_ibfk_1` FOREIGN KEY (`client_id`) REFERENCES `Client` (`ID`),
-        CONSTRAINT `Relation_table_client_ubicacion_ibfk_2` FOREIGN KEY (`ubicacion_id`) REFERENCES `Ubicacion` (`ID`)
+        KEY `Ubicacion` (`Ubicacion`),
+        KEY `Cliente` (`Cliente`),
+        CONSTRAINT `Booking_ibfk_1` FOREIGN KEY (`Ubicacion`) REFERENCES `Ubicacion` (`ID`),
+        CONSTRAINT `Booking_ibfk_2` FOREIGN KEY (`Cliente`) REFERENCES `Client` (`ID`)
     ) ENGINE = InnoDB DEFAULT CHARSET = utf8;
