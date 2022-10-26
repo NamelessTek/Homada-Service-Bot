@@ -59,5 +59,4 @@ def incoming_message_data() -> str:
         message = incoming_message()
         response.update({'sucess': True, 'message': message, 'message': f'{message}', 'status_code': 200, 'error': None, 'code': f'{code}'} if message and message != [{}]else {
             'sucess': False,  'message': 'Message could not be sent', 'status_code': 400, 'error': f'{error}', 'code': f'{code}'})
-
         return message

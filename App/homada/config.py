@@ -20,6 +20,8 @@ class Config:
         "TWILIO_AUTH_TOKEN", '674fe0bc1d80710bfcf19a3f8dc429cd')
     TWILIO_PHONE_NUMBER = os.environ.get(
         "TWILIO_PHONE_NUMBER", 'whatsapp:+14155238886')
+    TWILIO_STUDIO_FLOW_SID = os.environ.get(
+        "TWILIO_STUDIO_FLOW_SID", "FW032961632181dcbe427bd3a93961d6c2")
 
     if not TWILIO_ACCOUNT_SID or not TWILIO_AUTH_TOKEN or not TWILIO_PHONE_NUMBER:
         raise Exception(

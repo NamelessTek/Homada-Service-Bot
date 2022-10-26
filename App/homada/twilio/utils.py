@@ -1,12 +1,30 @@
 from homada.models import Ubicacion, Client, Booking
 from homada.ubicacion.utils import get_ubicacion
+from homada.clientes.utils import get_client, create_client
 from homada.reservaciones.utils import get_booking
 from twilio.twiml.messaging_response import MessagingResponse
 from homada import client as twilio_client
 from homada.config import Config
 from flask import Flask, request
 import phonenumbers
-import time
+import datetime
+
+
+def twilio_studio_flow(phone_number: str) -> str:
+    '''
+    Twilio Studio Flow
+    '''
+    execution = twilio_client.studio \
+        .v2 \
+        .flows(Config.TWILIO_STUDIO_FLOW_SID) \
+        .executions \
+        .create(to=(f'whatsapp:{phone_number}'), from_=Config.TWILIO_PHONE_NUMBER,
+                parameters={
+            "appointment_time": datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+        })\
+        .update(status='ended')
+
+    return execution
 
 
 def validate_phone_number(phone_number: str) -> bool:
@@ -90,8 +108,11 @@ def incoming_message() -> str:
     resp = MessagingResponse()
     # if the phone number is valid
     if validate_phone_number(phone_number) and incoming_message:
-        for message in conversations(phone_number, incoming_message):
-            resp.message(message)
+        # if incoming_message != 'crear reservación':
+        #     for message in conversations(phone_number, incoming_message):
+        #         resp.message(message)
+        # else:
+        resp.message(twilio_studio_flow(phone_number))
 
     else:
         resp.message(
@@ -114,26 +135,27 @@ def send_location_data(option: int) -> str:
 
     return location_data["Ubicacion"]
 
-# def send_location_message(phone_number: str, message: str, ubicacion: int = Ubicacion.id) -> dict:
-#     '''
-#     Send message to a phone
-#     '''
-#     ubicacion_data = get_ubicacion(
-#         Ubicacion.query.filter_by(id=ubicacion).first())
-#     if phone_number and message:
-#         match message:
-#             case 1:
-#                 message = f'La ubicacion se encuentra en {ubicacion_data["Ubicacion"]}'
-#             case _:
-#                 message = f'Oops! Algo salio mal, por favor intente mas tarde'
-#         try:
-#             message = twilio_client.messages.create(
-#                 to=phone_number,
-#                 from_=Config.TWILIO_PHONE_NUMBER,
-#                 body=message,
-#             )
-#         except Exception:
-#             return {'sucess': False, 'message': 'Message could not be sent', 'status_code': 400, 'error': True, 'code': '4'}
 
-#     else:
-#         pass
+def send_location_message(phone_number: str, message: str, ubicacion: int = Ubicacion.id) -> dict:
+    '''
+    Send message to a phone
+    '''
+    ubicacion_data = get_ubicacion(
+        Ubicacion.query.filter_by(id=ubicacion).first())
+    if phone_number and message:
+        match message:
+            case 1:
+                message = f'La ubicacion se encuentra en {ubicacion_data["Ubicacion"]}'
+            case _:
+                message = f'Oops! Algo salio mal, por favor intente mas tarde'
+        try:
+            message = twilio_client.messages.create(
+                to=phone_number,
+                from_="whatsapp:+14155238886",
+                body=message,
+            )
+        except Exception:
+            return {'sucess': False, 'message': 'Message could not be sent', 'status_code': 400, 'error': True, 'code': '4'}
+
+    else:
+        pass

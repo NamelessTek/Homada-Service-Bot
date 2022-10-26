@@ -1,6 +1,8 @@
 from typing import List
+from homada import db
 from homada.models import Client, Ubicacion
 from homada.ubicacion.utils import get_ubicacion
+import datetime
 
 
 def get_client(client: Client) -> dict:
@@ -9,13 +11,13 @@ def get_client(client: Client) -> dict:
     '''
     return {key: value for key, value in Client.__repr__(client).items() if client.status and value != []}
 
-# returns list of dicts
 
-
-def get_client_reservation(client: Client) -> List[dict]:
+def create_client(name: str, last_name: str, phone: str, email: str) -> dict:
     '''
-    Get client reservation data
+    Create client data in the database by receiving the name, last name, phone and email
+    from whatsApp
     '''
-    client_data = Client.query.filter_by(id=client.id).first()
-    return [get_ubicacion(
-        ubicacion) for ubicacion in client_data.ubicaciones if ubicacion.status]
+    client = Client(name, last_name, phone, email, True,
+                    datetime.now(), datetime.now())
+    db.session.add(client)
+    db.session.commit()
