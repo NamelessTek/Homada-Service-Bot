@@ -19,6 +19,7 @@ class Ubicacion(db.Model):
     ssid: str = db.Column(db.String(280), nullable=True)
     clave: str = db.Column(db.String(280), nullable=True)
     modem: str = db.Column(db.String(280), nullable=True)
+    email: str = db.Column(db.String(280), nullable=True)
     mascotas: bool = db.Column(db.Boolean, nullable=False)
     status: bool = db.Column(db.Boolean, nullable=False)
     option: str = db.Column(db.String(280), nullable=True)
@@ -28,7 +29,7 @@ class Ubicacion(db.Model):
         db.TIMESTAMP, nullable=False, default=datetime.now, onupdate=datetime.now)
 
     def __repr__(self):
-        return {"ID": self.id, "Ubicacion": self.ubicacion, "URL": self.url, "Direccion": self.direccion, "SSID": self.ssid, "Clave": self.clave, "Modem": self.modem,
+        return {"ID": self.id, "Ubicacion": self.ubicacion, "Email": self.email, "URL": self.url, "Direccion": self.direccion, "SSID": self.ssid, "Clave": self.clave, "Modem": self.modem,
                 "Mascotas": self.mascotas, "Status": self.status, "Option": self.option, "Creation Date": self.creation_date, "Last Update": self.last_update}
 
 
