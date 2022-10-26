@@ -39,7 +39,7 @@ CREATE TABLE
         `ID` int(11) NOT NULL AUTO_INCREMENT,
         `Option` int(11) NOT NULL,
         `Value` text NOT NULL,
-        `Creation_date` datetime NOT NULL,
+        `Creation_date` date NOT NULL,
         `Last_update` timestamp NOT NULL,
         PRIMARY KEY (`ID`)
     ) ENGINE = InnoDB DEFAULT CHARSET = utf8;
@@ -55,8 +55,8 @@ CREATE TABLE
         `Last_name` text NOT NULL,
         `Phone` text NOT NULL,
         `Reservation` text NOT NULL,
-        `Arrival` date NOT NULL,
-        `Departure` date NOT NULL,
+        `Arrival` datetime NOT NULL,
+        `Departure` datetime NOT NULL,
         `Status` int(11) NOT NULL,
         `Creation_date` date NOT NULL,
         `Last_update` timestamp NOT NULL,

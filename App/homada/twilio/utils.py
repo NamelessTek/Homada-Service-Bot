@@ -62,7 +62,6 @@ def conversations(phone_number: str, incoming_message: str) -> list:
     if incoming_message:
         response = request.values.get('Body', '').lower()
         match incoming_message:
-
             case 'hola':
                 messages.append(
                     f'¡Hola {client.name}! Gracias por hacer tu reservación con nosotros 😃')
