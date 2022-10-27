@@ -33,6 +33,7 @@ twilio==7.13.0
 Flask-WTF== 1.0.1
 phonenumbers
 email_validator
+flask_admin
 
 
 

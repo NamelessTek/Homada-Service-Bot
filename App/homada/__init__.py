@@ -7,6 +7,9 @@ from flask import Flask
 from homada.config import Config
 from flask_cors import CORS
 from twilio.rest import Client
+from flask_admin import Admin
+from flask_admin.contrib.sqla import ModelView
+
 
 db = SQLAlchemy()
 bcrypt = Bcrypt()
@@ -15,6 +18,7 @@ login_manager.login_view = 'main.login'
 login_manager.login_message_category = 'info'
 client = Client(Config.TWILIO_ACCOUNT_SID, Config.TWILIO_AUTH_TOKEN)
 mail = Mail()
+admin = Admin()
 
 
 @login_manager.user_loader
@@ -44,4 +48,5 @@ def create_app(config_class=Config):
     app.register_blueprint(booking)
     app.register_blueprint(user)
 
+    # admin.add_view(ModelView(Ubicacion, db.session))
     return app
