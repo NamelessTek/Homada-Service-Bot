@@ -13,6 +13,20 @@ CREATE DATABASE
 
 USE `Homada_DB`;
 
+DROP TABLE IF EXISTS `User`;
+
+CREATE TABLE
+    `User` (
+        `ID` int(11) NOT NULL AUTO_INCREMENT,
+        `Username` text NOT NULL,
+        `Email` text NOT NULL,
+        `Phone` text NOT NULL,
+        `Status` text NOT NULL,
+        `Creation_date` datetime NOT NULL,
+        `Last_update` timestamp NOT NULL,
+        PRIMARY KEY (`ID`)
+    ) ENGINE = InnoDB DEFAULT CHARSET = utf8;
+
 DROP TABLE IF EXISTS `Ubicacion`;
 
 CREATE TABLE

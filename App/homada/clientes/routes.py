@@ -6,14 +6,3 @@ from homada.models import *
 
 
 client = Blueprint('client', __name__)
-
-
-@client.route('/home', methods=['GET', 'POST'])
-def homepage():
-    data_client = Client.query.filter_by(id=1).first()
-    return render_template('home.html', data_client=data_client)
-
-
-@client.route('/register', methods=['GET', 'POST'])
-def register():
-    form = RegistrationForm()
