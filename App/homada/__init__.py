@@ -17,6 +17,7 @@ client = Client(Config.TWILIO_ACCOUNT_SID, Config.TWILIO_AUTH_TOKEN)
 mail = Mail()
 
 
+@login_manager.user_loader
 def create_app(config_class=Config):
     app = Flask(__name__)
     app.config.from_object(Config)
@@ -34,11 +35,13 @@ def create_app(config_class=Config):
     from homada.twilio.routes import twilio
     from homada.clientes.routes import client
     from homada.reservaciones.routes import booking
+    from homada.users.routes import user
 
     app.config.from_object(Config)
     app.register_blueprint(location)
     app.register_blueprint(twilio)
     app.register_blueprint(client)
     app.register_blueprint(booking)
+    app.register_blueprint(user)
 
     return app

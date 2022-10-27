@@ -1,3 +1,5 @@
+from traceback import print_tb
+from urllib import response
 from homada.models import Ubicacion, Client, Booking
 from homada.ubicacion.utils import get_ubicacion
 from homada.clientes.utils import get_client, create_client
@@ -8,6 +10,7 @@ from homada.config import Config
 from flask import Flask, request
 import phonenumbers
 import datetime
+import requests
 
 
 def twilio_studio_flow(phone_number: str) -> str:
@@ -15,16 +18,11 @@ def twilio_studio_flow(phone_number: str) -> str:
     Twilio Studio Flow
     '''
     execution = twilio_client.studio \
-        .v2 \
+        .v2\
         .flows(Config.TWILIO_STUDIO_FLOW_SID) \
         .executions \
-        .create(to=(f'whatsapp:{phone_number}'), from_=Config.TWILIO_PHONE_NUMBER,
-                parameters={
-            "appointment_time": datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-        })\
+        .create(to=(f'whatsapp:{phone_number}'), from_=Config.TWILIO_PHONE_NUMBER, )\
         .update(status='ended')
-
-    return execution
 
 
 def validate_phone_number(phone_number: str) -> bool:
@@ -111,7 +109,6 @@ def incoming_message() -> str:
         # if incoming_message != 'crear reservación':
         #     for message in conversations(phone_number, incoming_message):
         #         resp.message(message)
-        # else:
         resp.message(twilio_studio_flow(phone_number))
 
     else:

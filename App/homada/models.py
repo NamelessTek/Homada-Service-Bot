@@ -76,7 +76,7 @@ class Client(db.Model):
                                   backref=db.backref('client_ubicacion', lazy='dynamic'))
 
     def __repr__(self):
-        return {"ID": self.id, "Name": self.name, "Last Name": self.last_name,"Email": self.email, "Phone": self.phone, "Status": self.status,
+        return {"ID": self.id, "Name": self.name, "Last Name": self.last_name, "Email": self.email, "Phone": self.phone, "Status": self.status,
                 "Creation Date": self.creation_date, "Last Update": self.last_update}
 
 
