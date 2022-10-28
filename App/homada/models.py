@@ -1,7 +1,9 @@
+from http import client
 from homada import db
 from dataclasses import dataclass
 from datetime import datetime
 from homada.relations import *
+# from wtforms.validators import SelectField
 
 
 @dataclass
@@ -27,9 +29,16 @@ class Ubicacion(db.Model):
     last_update: str = db.Column(
         db.TIMESTAMP, nullable=False, default=datetime.now, onupdate=datetime.now)
 
-    def __repr__(self):
+    # child relationship
+    bookings = db.relationship(
+        'Booking', backref='ubicacion', lazy='dynamic')
+
+    def __repr__(self) -> dict:
         return {"ID": self.id, "Ubicacion": self.ubicacion, "URL": self.url, "Direccion": self.direccion, "SSID": self.ssid, "Clave": self.clave, "Modem": self.modem,
                 "Mascotas": self.mascotas, "Status": self.status, "Option": self.option, "Creation Date": self.creation_date, "Last Update": self.last_update}
+
+    def __str__(self) -> str:
+        return self.ubicacion
 
 
 @dataclass
@@ -47,7 +56,7 @@ class Option(db.Model):
     last_update: str = db.Column(
         db.TIMESTAMP, nullable=False, default=datetime.now, onupdate=datetime.now)
 
-    def __repr__(self):
+    def __repr__(self) -> dict:
         return {"ID": self.id, "Option": self.option, "Value": self.value,
                 "Creation Date": self.creation_date, "Last Update": self.last_update}
 
@@ -71,13 +80,16 @@ class Client(db.Model):
     last_update: str = db.Column(
         db.TIMESTAMP, nullable=False, default=datetime.now, onupdate=datetime.now)
 
-    # Child relationships
-    ubicaciones = db.relationship('Ubicacion', secondary=Relation_table_client_ubicacion,
-                                  backref=db.backref('client_ubicacion', lazy='dynamic'))
+    # child relationship
+    bookings = db.relationship(
+        'Booking', backref='client', lazy='dynamic')
 
-    def __repr__(self):
+    def __repr__(self) -> dict:
         return {"ID": self.id, "Name": self.name, "Last Name": self.last_name, "Email": self.email, "Phone": self.phone, "Status": self.status,
                 "Creation Date": self.creation_date, "Last Update": self.last_update}
+
+    def __str__(self) -> str:
+        return self.name
 
 
 @dataclass()
@@ -93,9 +105,9 @@ class Booking(db.Model):
     arrival_time: str = db.Column(db.Time, nullable=False)
     departure: str = db.Column(db.Date, nullable=False)
     departure_time: str = db.Column(db.Time, nullable=False)
-    ubicacion: int = db.Column(db.Integer, db.ForeignKey(
-        'Ubicacion.id'), nullable=False)
-    cliente: int = db.Column(db.Integer, db.ForeignKey(
+    ubicacion_id: int = db.Column(db.Integer, db.ForeignKey(
+        'Ubicacion.id'), nullable=False,)
+    cliente_id: int = db.Column(db.Integer, db.ForeignKey(
         'Client.id'), nullable=False)
     creation_date: str = db.Column(
         db.DateTime, nullable=False, default=datetime.now)
@@ -103,7 +115,9 @@ class Booking(db.Model):
         db.TIMESTAMP, nullable=False, default=datetime.now, onupdate=datetime.now)
     status: bool = db.Column(db.Boolean, nullable=False)
 
-    def __repr__(self):
-        return {"ID": self.id, "Booking Number": self.booking_number, "Arrival": self.arrival, "Arrival Time": self.arrival_time,
-                "Departure": self.departure, "Departure Time": self.departure_time, "Ubicacion": self.ubicacion,
-                "Client": self.cliente, "Creation Date": self.creation_date, "Last Update": self.last_update, "Status": self.status}
+    def __repr__(self) -> dict:
+        # convert to dict and capitalize first letter of each key and captilize ID
+        return {column.capitalize(): getattr(self, column) for column in [column.name for column in self.__table__.columns]}
+
+    def __str__(self) -> str:
+        return 'Booking %r' % str(self.booking_number)

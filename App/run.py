@@ -4,17 +4,17 @@ from flask import Blueprint, request, jsonify
 from werkzeug.exceptions import HTTPException
 import traceback
 from flask_admin import Admin
-from homada.models import *
+from homada.forms.Views import *
 from flask_admin.contrib.sqla import ModelView
+from flask_sqlalchemy import SQLAlchemy
 
 
 app = create_app()
 admin = Admin(app)
-admin.add_view(ModelView(Ubicacion, db.session))
-# admin.add_view(ModelView(Client, db.session))
-# admin.add_view(ModelView(Booking, db.session))
-# for model in [Ubicacion, Client, Booking]:
-#     admin.add_view(ModelView(model, db.session))
+for model in [Ubicacion, Client]:
+    admin.add_view(ModelView(model, db.session))
+
+admin.add_view(BookingView(Booking, db.session))
 
 
 @app.errorhandler(Exception)

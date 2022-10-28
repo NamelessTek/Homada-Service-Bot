@@ -5,4 +5,4 @@ from homada.clientes.utils import *
 from homada.models import *
 
 
-client = Blueprint('client', __name__)
+cliente = Blueprint('cliente', __name__)

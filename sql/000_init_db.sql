@@ -77,6 +77,8 @@ CREATE TABLE
 
 DROP TABLE IF EXISTS `Booking`;
 
+DROP TABLE IF EXISTS `Booking`;
+
 CREATE TABLE
     `Booking` (
         `ID` int(11) NOT NULL AUTO_INCREMENT,
@@ -85,14 +87,14 @@ CREATE TABLE
         `Arrival_time` time NOT NULL,
         `Departure` date NOT NULL,
         `Departure_time` time NOT NULL,
-        `Ubicacion` int(11) NOT NULL,
-        `Cliente` int(11) NOT NULL,
+        `Ubicacion_id` int(11) NOT NULL,
+        `Cliente_id` int(11) NOT NULL,
         `Creation_date` datetime NOT NULL,
         `Last_update` timestamp NOT NULL,
         `Status` int(11) NOT NULL,
         PRIMARY KEY (`ID`),
-        KEY `Ubicacion` (`Ubicacion`),
-        KEY `Cliente` (`Cliente`),
-        CONSTRAINT `Booking_ibfk_1` FOREIGN KEY (`Ubicacion`) REFERENCES `Ubicacion` (`ID`),
-        CONSTRAINT `Booking_ibfk_2` FOREIGN KEY (`Cliente`) REFERENCES `Client` (`ID`)
+        KEY `Ubicacion` (`Ubicacion_id`),
+        KEY `Cliente` (`Cliente_id`),
+        CONSTRAINT `Booking_ibfk_1` FOREIGN KEY (`Ubicacion_id`) REFERENCES `Ubicacion` (`ID`),
+        CONSTRAINT `Booking_ibfk_2` FOREIGN KEY (`Cliente_id`) REFERENCES `Client` (`ID`)
     ) ENGINE = InnoDB DEFAULT CHARSET = utf8;

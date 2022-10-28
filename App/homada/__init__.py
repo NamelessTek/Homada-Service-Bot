@@ -18,7 +18,6 @@ login_manager.login_view = 'main.login'
 login_manager.login_message_category = 'info'
 client = Client(Config.TWILIO_ACCOUNT_SID, Config.TWILIO_AUTH_TOKEN)
 mail = Mail()
-admin = Admin()
 
 
 @login_manager.user_loader
@@ -37,15 +36,15 @@ def create_app(config_class=Config):
 
     from homada.ubicacion.routes import location
     from homada.twilio.routes import twilio
-    from homada.clientes.routes import client
-    from homada.reservaciones.routes import booking
+    from homada.clientes.routes import cliente
+    from homada.reservaciones.routes import reservacion
     from homada.users.routes import user
 
     app.config.from_object(Config)
     app.register_blueprint(location)
     app.register_blueprint(twilio)
-    app.register_blueprint(client)
-    app.register_blueprint(booking)
+    app.register_blueprint(cliente)
+    app.register_blueprint(reservacion)
     app.register_blueprint(user)
 
     # admin.add_view(ModelView(Ubicacion, db.session))

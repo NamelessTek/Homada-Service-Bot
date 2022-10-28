@@ -27,3 +27,10 @@ class LoginForm(FlaskForm):
     password: str = PasswordField('Password', validators=[DataRequired()])
     remember: str = BooleanField('Remember Me')
     submit: str = SubmitField('Login')
+
+
+@dataclass
+class CreateBooking(FlaskForm):
+    booking_number: int = StringField('Booking Number', validators=[
+        DataRequired()])
+    # validate that cliend_id exists in the database

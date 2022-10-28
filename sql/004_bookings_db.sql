@@ -6,8 +6,8 @@ INSERT INTO
         `Arrival_time`,
         `Departure`,
         `Departure_time`,
-        `Ubicacion`,
-        `Cliente`,
+        `Ubicacion_id`,
+        `Cliente_id`,
         `Creation_date`,
         `Last_update`,
         `Status`
