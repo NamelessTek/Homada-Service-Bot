@@ -44,9 +44,10 @@ def conversations(phone_number: str, incoming_message: str) -> list:
     messages = []
     client = Client.query.filter_by(phone=phone_number).first()
     booking = get_booking(
-        Booking.query.filter_by(cliente=client.id).first())
+        Booking.query.filter_by(cliente_id=client.id).first())
+    print(booking)
     ubicacion = get_ubicacion(
-        Ubicacion.query.filter_by(id=booking['Ubicacion']).first())
+        Ubicacion.query.filter_by(id=booking['Ubicacion_id']).first())
 
     if incoming_message:
         response = request.values.get('Body', '').lower()
@@ -61,7 +62,7 @@ def conversations(phone_number: str, incoming_message: str) -> list:
                 #         f'{index + 1}. {ubicacion["Ubicacion"]}' for index, ubicacion in enumerate(booking))
                 if booking:
                     messages.extend(
-                        [f'{client.name}, para tu entradad el día {booking["Arrival"].strftime("%d/%m/%Y")}, queremos compartirte algunos datos. La hora de entrada es a las {booking["Arrival Time"].strftime("%H:%M")}. Sabemos que puedes necesitar conexión a internet, la red es {ubicacion["SSID"]} y el password es {ubicacion["Clave"]}.',
+                        [f'{client.name}, para tu entradad el día {booking["Arrival"].strftime("%d/%m/%Y")}, queremos compartirte algunos datos. La hora de entrada es a las {booking["Arrival_time"].strftime("%H:%M")}. Sabemos que puedes necesitar conexión a internet, la red es {ubicacion["SSID"]} y el password es {ubicacion["Clave"]}.',
                          f'Para tu facilidad, el link de navegación es el siguiente: {ubicacion["URL"]}.',
                          'En caso de necesitar apoyo por favor escribe en el chat la palabra "menú"'])
 
@@ -106,10 +107,10 @@ def incoming_message() -> str:
     resp = MessagingResponse()
     # if the phone number is valid
     if validate_phone_number(phone_number) and incoming_message:
-        # if incoming_message != 'crear reservación':
-        #     for message in conversations(phone_number, incoming_message):
-        #         resp.message(message)
-        resp.message(twilio_studio_flow(phone_number))
+        if incoming_message != 'crear reservación':
+            for message in conversations(phone_number, incoming_message):
+                resp.message(message)
+        # resp.message(twilio_studio_flow(phone_number))
 
     else:
         resp.message(
