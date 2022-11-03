@@ -1,28 +1,10 @@
-from traceback import print_tb
-from urllib import response
-from homada.models import Ubicacion, Client, Booking
+from homada.models import Ubicacion, Client, Booking, Questions
 from homada.ubicacion.utils import get_ubicacion
-from homada.clientes.utils import get_client, create_client
 from homada.reservaciones.utils import get_booking
 from twilio.twiml.messaging_response import MessagingResponse
 from homada import client as twilio_client
-from homada.config import Config
-from flask import Flask, request
+from flask import Flask, request, url_for, session, redirect
 import phonenumbers
-import datetime
-import requests
-
-
-def twilio_studio_flow(phone_number: str) -> str:
-    '''
-    Twilio Studio Flow
-    '''
-    execution = twilio_client.studio \
-        .v2\
-        .flows(Config.TWILIO_STUDIO_FLOW_SID) \
-        .executions \
-        .create(to=(f'whatsapp:{phone_number}'), from_=Config.TWILIO_PHONE_NUMBER, )\
-        .update(status='ended')
 
 
 def validate_phone_number(phone_number: str) -> bool:
@@ -37,6 +19,24 @@ def validate_phone_number(phone_number: str) -> bool:
         return False
 
 
+def redirect_twiml(question: int) -> str:
+    '''
+    Answer the question
+    '''
+    resp = MessagingResponse()
+    resp.redirect(url_for('twilio_conversations', question=question))
+    return str(resp)
+
+
+def goodby_message() -> str:
+    '''
+    Goodbye message
+    '''
+    resp = MessagingResponse()
+    resp.message('Adios 😃')
+    return str(resp)
+
+
 def conversations(phone_number: str, incoming_message: str) -> list:
     '''
     Conversations with the user
@@ -45,7 +45,6 @@ def conversations(phone_number: str, incoming_message: str) -> list:
     client = Client.query.filter_by(phone=phone_number).first()
     booking = get_booking(
         Booking.query.filter_by(cliente_id=client.id).first())
-    print(booking)
     ubicacion = get_ubicacion(
         Ubicacion.query.filter_by(id=booking['Ubicacion_id']).first())
 
@@ -58,14 +57,13 @@ def conversations(phone_number: str, incoming_message: str) -> list:
                 # if len(booking) > 1:
                 #     messages = [f'{client.name} tienes {len(booking)} reservaciones',
                 #                 f'¿De qué ubicación quieres saber la informacion?']
-                #     messages.extend(
-                #         f'{index + 1}. {ubicacion["Ubicacion"]}' for index, ubicacion in enumerate(booking))
+                # messages.extend(
+                #     f'{index + 1}. {ubicacion["Ubicacion"]}' for index, ubicacion in enumerate(booking))
                 if booking:
                     messages.extend(
                         [f'{client.name}, para tu entradad el día {booking["Arrival"].strftime("%d/%m/%Y")}, queremos compartirte algunos datos. La hora de entrada es a las {booking["Arrival_time"].strftime("%H:%M")}. Sabemos que puedes necesitar conexión a internet, la red es {ubicacion["SSID"]} y el password es {ubicacion["Clave"]}.',
                          f'Para tu facilidad, el link de navegación es el siguiente: {ubicacion["URL"]}.',
                          'En caso de necesitar apoyo por favor escribe en el chat la palabra "menú"'])
-
                 else:
                     messages.append(
                         f'{client.name}, no tienes reservaciones, por favor haz una reservacion')
@@ -75,6 +73,8 @@ def conversations(phone_number: str, incoming_message: str) -> list:
             case 'menu':
                 messages.append(
                     f'¡Hola {client.name}! Estos son los servicios que ofrecemos: \n 1. Ubicacion \n 2. Reservacion \n 3. Cancelar reservacion \n 4. Salir')
+            case 'crear usuario':
+                messages = [message for message in create_user(phone_number)]
 
             case _:
                 messages.append(
@@ -107,9 +107,9 @@ def incoming_message() -> str:
     resp = MessagingResponse()
     # if the phone number is valid
     if validate_phone_number(phone_number) and incoming_message:
-        if incoming_message != 'crear reservación':
-            for message in conversations(phone_number, incoming_message):
-                resp.message(message)
+        for message in conversations(phone_number, incoming_message):
+            resp.message(message)
+
         # resp.message(twilio_studio_flow(phone_number))
 
     else:
@@ -117,21 +117,6 @@ def incoming_message() -> str:
             'Lo sentimos, no pudimos validar tu numero de telefono 😟')
 
     return str(resp)
-
-
-def send_location_data(option: int) -> str:
-    '''
-    Send location data
-    '''
-    option = int(request.values.get('Body', '').lower())
-    if option:
-        # get the location data
-        location_data = get_ubicacion(
-            Ubicacion.query.filter_by(id=option).first())
-    else:
-        pass
-
-    return location_data["Ubicacion"]
 
 
 def send_location_message(phone_number: str, message: str, ubicacion: int = Ubicacion.id) -> dict:
@@ -157,3 +142,17 @@ def send_location_message(phone_number: str, message: str, ubicacion: int = Ubic
 
     else:
         pass
+
+
+def create_user(phone_number: str, question_id: int) -> list:
+    '''
+    Send survey message
+    '''
+    messages = []
+    if phone_number:
+        question = Questions.query.filter_by(id=question_id).first()
+        messages.append(question.question)
+    else:
+        pass
+
+    return messages
