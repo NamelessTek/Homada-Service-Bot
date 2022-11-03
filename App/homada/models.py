@@ -60,8 +60,21 @@ class Option(db.Model):
         return {"ID": self.id, "Option": self.option, "Value": self.value,
                 "Creation Date": self.creation_date, "Last Update": self.last_update}
 
+@dataclass
+class Questions(db.Model):
+    '''
+    Questions Model serves as a table to store questions for the app
+    '''
+    __tablename__ = 'Questions'
 
-@dataclass()
+    id: int = db.Column(db.Integer, primary_key=True)
+    question: str = db.Column(db.String(250), nullable=False)
+    type_question: str = db.Column(db.String(50), nullable=False)
+
+    def __repr__(self) -> dict:
+        return {"ID": self.id, "Question": self.question, "Type_Question": self.type_question}
+
+@dataclass
 class Client(db.Model):
     '''
     Client Model for storing client related data 
@@ -92,7 +105,7 @@ class Client(db.Model):
         return self.name
 
 
-@dataclass()
+@dataclass
 class Booking(db.Model):
     '''
     Booking Model for storing client-location booking related data
