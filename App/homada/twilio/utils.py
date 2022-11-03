@@ -19,13 +19,11 @@ def validate_phone_number(phone_number: str) -> bool:
         return False
 
 
-def redirect_twiml(question: int) -> str:
-    '''
-    Answer the question
-    '''
-    resp = MessagingResponse()
-    resp.redirect(url_for('twilio_conversations', question=question))
-    return str(resp)
+def redirect_twiml(question):
+    response = MessagingResponse()
+    response.redirect(url=url_for(
+        'question', question_id=question.id), method='GET')
+    return str(response)
 
 
 def goodby_message() -> str:
@@ -70,30 +68,22 @@ def conversations(phone_number: str, incoming_message: str) -> list:
             case 'adios':
                 messages.append(
                     f'¡Adios {client.name}! Esperamos verte pronto 😃')
-            case 'menu':
-                messages.append(
-                    f'¡Hola {client.name}! Estos son los servicios que ofrecemos: \n 1. Ubicacion \n 2. Reservacion \n 3. Cancelar reservacion \n 4. Salir')
+            # case 'menu':
+            #     messages.append(
+            #         f'¡Hola {client.name}! Estos son los servicios que ofrecemos: \n 1. Ubicacion \n 2. Reservacion \n 3. Cancelar reservacion \n 4. Salir')
             case 'crear usuario':
                 if 'question_id' in session:
+                    pass
                     # Sent to conversation to get answer
-                    response.redirect(url_for('answer', question_id=session['question_id']))
+                    # response.redirect(
+                    #     url_for('answer', question_id=session['question_id']))
                 else:
-                    welcome_user(response.message)
+                    messages = [message for message in send_question()]
                     redirect_to_first_question(response)
             case _:
                 messages.append(
                     f'No pude entender tu respuesta 😟 Inténtalo nuevamente 👇🏼 o escribe menu para desplegar las opciones con las que podemos apoyarte.')
-        if response:
-            # if the user selected an option from the ubication menu send the location data
-            if response.isdigit() and int(response) <= len(booking):
-                messages.clear()
-                messages.append(
-                    f'La ubicacion se encuentra en {booking[int(response) - 1]["Ubicacion"]}, aquí está el link del mapa {booking[int(response) - 1]["URL"]}')
-            else:
-                pass
-        else:
-            messages.append(
-                f'Oops! Algo salio mal, por favor intente mas tarde')
+
     else:
         pass
 
@@ -101,7 +91,7 @@ def conversations(phone_number: str, incoming_message: str) -> list:
 
 
 def redirect_to_first_question(response):
-    first_question = Questions.order_by('ID').first()
+    first_question = Questions.query.order_by(Questions.id).first()
     first_question_url = url_for('question', question_id=first_question.id)
     response.redirect(url=first_question_url, method='GET')
 
@@ -118,7 +108,9 @@ def welcome_user(send_function):
                     - hora de partida
                     - ubicación
                     """
-    send_function(welcome_text)
+    # send_function(welcome_text)
+    return welcome_text
+
 
 def goodbye_twiml():
     response = MessagingResponse()
@@ -127,17 +119,12 @@ def goodbye_twiml():
         del session['question_id']
     return str(response)
 
+
 def sms_twiml(question):
     response = MessagingResponse()
     response.message(question.content)
-    response.message(SMS_INSTRUCTIONS[question.kind])
     return str(response)
 
-SMS_INSTRUCTIONS = {
-    Questions.TEXT: 'Please type your answer',
-    Questions.BOOLEAN: 'Please type 1 for yes and 0 for no',
-    Questions.NUMERIC: 'Please type a number between 1 and 10',
-}
 
 def incoming_message() -> str:
     '''
@@ -149,15 +136,18 @@ def incoming_message() -> str:
     phone_number = request.values.get('From', None).replace('whatsapp:', '')
     resp = MessagingResponse()
     # if the phone number is valid
-    if validate_phone_number(phone_number) and incoming_message:
-        for message in conversations(phone_number, incoming_message):
-            resp.message(message)
+    if phone_number != "+5215571967146":
+        if validate_phone_number(phone_number) and incoming_message:
+            for message in conversations(phone_number, incoming_message):
+                resp.message(message)
 
-        # resp.message(twilio_studio_flow(phone_number))
+            # resp.message(twilio_studio_flow(phone_number))
 
+        else:
+            resp.message(
+                'Lo sentimos, no pudimos validar tu numero de telefono 😟')
     else:
-        resp.message(
-            'Lo sentimos, no pudimos validar tu numero de telefono 😟')
+        resp.message('Hola, bienvenido a Homada')
 
     return str(resp)
 
@@ -187,7 +177,7 @@ def send_location_message(phone_number: str, message: str, ubicacion: int = Ubic
         pass
 
 
-def create_user(phone_number: str, question_id: int) -> list:
+def send_question(phone_number: str, question_id: int) -> list:
     '''
     Send survey message
     '''
