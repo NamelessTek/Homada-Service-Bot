@@ -51,9 +51,20 @@ def incoming_message_data() -> str:
         return message
 
 
-@twilio.route('/answer/<int:question_id>', methods=['GET', 'POST'])
-def answer(question_id: int) -> str:
-    question_id = int(request.values.get('Body', '').lower())
+@twilio.route('/answer/<question_id>', methods=['POST'])
+def answer(question_id):
+    question = Questions.query.filter_by(id=question_id)
+    #Guardar respuesta en db
 
-    if question_id:
-        pass
+    next_question = question.next()
+    if next_question:
+        return redirect_twiml(next_question)
+    else:
+        return goodbye_twiml()
+
+
+@twilio.route('/question/<question_id>')
+def question(question_id):
+    question = Questions.query.filter_by(id=question_id)
+    session['question_id'] = question.id
+    return sms_twiml(question)

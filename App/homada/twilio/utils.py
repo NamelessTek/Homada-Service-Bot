@@ -41,6 +41,7 @@ def conversations(phone_number: str, incoming_message: str) -> list:
     '''
     Conversations with the user
     '''
+    response = MessagingResponse()
     messages = []
     client = Client.query.filter_by(phone=phone_number).first()
     booking = get_booking(
@@ -49,7 +50,6 @@ def conversations(phone_number: str, incoming_message: str) -> list:
         Ubicacion.query.filter_by(id=booking['Ubicacion_id']).first())
 
     if incoming_message:
-        response = request.values.get('Body', '').lower()
         match incoming_message:
             case 'hola':
                 messages = [
@@ -74,8 +74,12 @@ def conversations(phone_number: str, incoming_message: str) -> list:
                 messages.append(
                     f'¡Hola {client.name}! Estos son los servicios que ofrecemos: \n 1. Ubicacion \n 2. Reservacion \n 3. Cancelar reservacion \n 4. Salir')
             case 'crear usuario':
-                messages = [message for message in create_user(phone_number)]
-
+                if 'question_id' in session:
+                    # Sent to conversation to get answer
+                    response.redirect(url_for('answer', question_id=session['question_id']))
+                else:
+                    welcome_user(response.message)
+                    redirect_to_first_question(response)
             case _:
                 messages.append(
                     f'No pude entender tu respuesta 😟 Inténtalo nuevamente 👇🏼 o escribe menu para desplegar las opciones con las que podemos apoyarte.')
@@ -95,6 +99,45 @@ def conversations(phone_number: str, incoming_message: str) -> list:
 
     return messages
 
+
+def redirect_to_first_question(response):
+    first_question = Questions.order_by('ID').first()
+    first_question_url = url_for('question', question_id=first_question.id)
+    response.redirect(url=first_question_url, method='GET')
+
+
+def welcome_user(send_function):
+    welcome_text = """Para la creación de una reservación es necesario crear el cliente con los siguientes datos:
+                    - Nombre
+                    - teléfono
+                    - Email
+                    - número de reservación
+                    - día de llegada
+                    - hora de llegada
+                    - día de partida
+                    - hora de partida
+                    - ubicación
+                    """
+    send_function(welcome_text)
+
+def goodbye_twiml():
+    response = MessagingResponse()
+    response.message("Thank you for answering our survey. Good bye!")
+    if 'question_id' in session:
+        del session['question_id']
+    return str(response)
+
+def sms_twiml(question):
+    response = MessagingResponse()
+    response.message(question.content)
+    response.message(SMS_INSTRUCTIONS[question.kind])
+    return str(response)
+
+SMS_INSTRUCTIONS = {
+    Questions.TEXT: 'Please type your answer',
+    Questions.BOOLEAN: 'Please type 1 for yes and 0 for no',
+    Questions.NUMERIC: 'Please type a number between 1 and 10',
+}
 
 def incoming_message() -> str:
     '''
