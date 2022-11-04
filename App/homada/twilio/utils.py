@@ -101,14 +101,17 @@ def conversations_homada(incoming_message: str):
             else:
                 response.message(goodbye_twiml())
         else:
-            response.message(redirect_to_first_question(response))
+            print("Primera pregunta", flush=True)
+            pregunta = redirect_to_first_question()
+            print("Pregunta "+ pregunta, flush=True)
+            response.message(pregunta)
     else:
         pass
 
     return messages
 
 
-def redirect_to_first_question(response):
+def redirect_to_first_question():
     first_question = Questions.query.order_by(Questions.id).first()
     session['question_id'] = first_question.id
     return first_question.question
