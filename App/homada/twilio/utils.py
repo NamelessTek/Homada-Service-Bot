@@ -94,13 +94,14 @@ def conversations_homada(incoming_message: str) -> list:
 
             next_id_question = int(session['question_id'])+1
             print("Siguiente pregunta", flush=True)
-            next_question = Questions.query.filter_by(id=next_id_question).first()
-            print("Pregunta siguiente " + next_question, flush=True)
+            next_question = Questions.query.filter_by(
+                id=next_id_question).first()
+            print("Pregunta siguiente " + next_question.question, flush=True)
             if next_question:
                 session['question_id'] = next_question.id
-                messages.append(response.message(next_question.question))
+                messages.append(next_question.question)
             else:
-                messages.append(response.message(goodbye_twiml()))
+                messages.append(goodbye_twiml())
         else:
             print("Primera pregunta", flush=True)
             pregunta = redirect_to_first_question()
