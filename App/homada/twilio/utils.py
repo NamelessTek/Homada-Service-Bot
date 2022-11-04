@@ -81,7 +81,7 @@ def conversations_client(phone_number: str, incoming_message: str) -> list:
     return messages
 
 
-def conversations_homada(incoming_message: str):
+def conversations_homada(incoming_message: str) -> list:
     '''
     Conversations with the homada user
     '''
@@ -92,8 +92,10 @@ def conversations_homada(incoming_message: str):
         if 'question_id' in session:
             # Guardar respuesta en db
 
-            # id_next_question = session['question_id'] + 1
-            next_question = Questions.query.filter_by(id=1).first()
+            next_id_question = int(session['question_id'])+1
+            print("Siguiente pregunta", flush=True)
+            next_question = Questions.query.filter_by(id=next_id_question).first()
+            print("Pregunta siguiente " + next_question, flush=True)
             if next_question:
                 session['question_id'] = next_question.id
                 messages.append(response.message(next_question.question))
@@ -167,18 +169,19 @@ def incoming_message() -> str:
             resp.message(
                 'Lo sentimos, no pudimos validar tu numero de telefono 😟')
     else:
-        resp.message("""Hola, bienvenido a Homada
-        Para la creación de una reservación es necesario crear el cliente con los siguientes datos:
-        - Nombre
-        - teléfono
-        - Email
-        - número de reservación
-        - día de llegada
-        - hora de llegada
-        - día de partida
-        - hora de partida
-        - ubicación
-        """)
+        if 'question_id' not in session:
+            resp.message("""Hola, bienvenido a Homada
+            Para la creación de una reservación es necesario crear el cliente con los siguientes datos:
+            - Nombre
+            - teléfono
+            - Email
+            - número de reservación
+            - día de llegada
+            - hora de llegada
+            - día de partida
+            - hora de partida
+            - ubicación
+            """)
         for message in conversations_homada(incoming_message):
             resp.message(message)
 
