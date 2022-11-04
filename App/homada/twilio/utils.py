@@ -18,6 +18,7 @@ def validate_phone_number(phone_number: str) -> bool:
     except Exception:
         return False
 
+
 def goodby_message() -> str:
     '''
     Goodbye message
@@ -68,8 +69,8 @@ def conversations_client(phone_number: str, incoming_message: str) -> list:
                     pass
                     # Sent to conversation to get answer
                     # response.redirect(
-                    #     
-                
+                    #
+
             case _:
                 messages.append(
                     f'No pude entender tu respuesta 😟 Inténtalo nuevamente 👇🏼 o escribe menu para desplegar las opciones con las que podemos apoyarte.')
@@ -78,6 +79,7 @@ def conversations_client(phone_number: str, incoming_message: str) -> list:
         pass
 
     return messages
+
 
 def conversations_homada(incoming_message: str):
     '''
@@ -89,7 +91,7 @@ def conversations_homada(incoming_message: str):
     if incoming_message:
         if 'question_id' in session:
             question = Questions.query.filter_by(id=session['question_id'])
-            #Guardar respuesta en db
+            # Guardar respuesta en db
 
             id_next_question = session['question_id'] + 1
             next_question = Questions.query.filter_by(id=id_next_question)
@@ -99,7 +101,6 @@ def conversations_homada(incoming_message: str):
             else:
                 response.message(goodbye_twiml())
         else:
-            messages = [message for message in send_question()]
             response.message(redirect_to_first_question(response))
     else:
         pass
@@ -111,6 +112,7 @@ def redirect_to_first_question(response):
     first_question = Questions.query.order_by(Questions.id).first()
     session['question_id'] = first_question.id
     return first_question.question
+
 
 def welcome_user(send_function):
     welcome_text = """Para la creación de una reservación es necesario crear el cliente con los siguientes datos:
@@ -152,8 +154,8 @@ def incoming_message() -> str:
     phone_number = request.values.get('From', None).replace('whatsapp:', '')
     resp = MessagingResponse()
     # if the phone number is valid
-    if phone_number != "+5215571967146" or phone_number != "+5215554060855" :
-        #Client conversation
+    if phone_number != "+5215571967146" and phone_number != "+5215554060855":
+        # Client conversation
         if validate_phone_number(phone_number) and incoming_message:
             for message in conversations_client(phone_number, incoming_message):
                 resp.message(message)
