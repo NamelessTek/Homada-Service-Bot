@@ -18,14 +18,6 @@ def validate_phone_number(phone_number: str) -> bool:
     except Exception:
         return False
 
-
-def redirect_twiml(question):
-    response = MessagingResponse()
-    response.redirect(url=url_for(
-        'question', question_id=question.id), method='GET')
-    return str(response)
-
-
 def goodby_message() -> str:
     '''
     Goodbye message
@@ -35,7 +27,7 @@ def goodby_message() -> str:
     return str(resp)
 
 
-def conversations(phone_number: str, incoming_message: str) -> list:
+def conversations_client(phone_number: str, incoming_message: str) -> list:
     '''
     Conversations with the user
     '''
@@ -76,10 +68,8 @@ def conversations(phone_number: str, incoming_message: str) -> list:
                     pass
                     # Sent to conversation to get answer
                     # response.redirect(
-                    #     url_for('answer', question_id=session['question_id']))
-                else:
-                    messages = [message for message in send_question()]
-                    redirect_to_first_question(response)
+                    #     
+                
             case _:
                 messages.append(
                     f'No pude entender tu respuesta 😟 Inténtalo nuevamente 👇🏼 o escribe menu para desplegar las opciones con las que podemos apoyarte.')
@@ -89,12 +79,38 @@ def conversations(phone_number: str, incoming_message: str) -> list:
 
     return messages
 
+def conversations_homada(incoming_message: str):
+    '''
+    Conversations with the homada user
+    '''
+    response = MessagingResponse()
+    messages = []
+
+    if incoming_message:
+        if 'question_id' in session:
+            question = Questions.query.filter_by(id=session['question_id'])
+            #Guardar respuesta en db
+
+            id_next_question = session['question_id'] + 1
+            next_question = Questions.query.filter_by(id=id_next_question)
+            if next_question:
+                session['question_id'] = next_question.id
+                response.message(next_question.question)
+            else:
+                response.message(goodbye_twiml())
+        else:
+            messages = [message for message in send_question()]
+            response.message(redirect_to_first_question(response))
+    else:
+        pass
+
+    return messages
+
 
 def redirect_to_first_question(response):
     first_question = Questions.query.order_by(Questions.id).first()
-    first_question_url = url_for('question', question_id=first_question.id)
-    response.redirect(url=first_question_url, method='GET')
-
+    session['question_id'] = first_question.id
+    return first_question.question
 
 def welcome_user(send_function):
     welcome_text = """Para la creación de una reservación es necesario crear el cliente con los siguientes datos:
@@ -136,18 +152,29 @@ def incoming_message() -> str:
     phone_number = request.values.get('From', None).replace('whatsapp:', '')
     resp = MessagingResponse()
     # if the phone number is valid
-    if phone_number != "+5215571967146":
+    if phone_number != "+5215571967146" or phone_number != "+5215554060855" :
+        #Client conversation
         if validate_phone_number(phone_number) and incoming_message:
-            for message in conversations(phone_number, incoming_message):
+            for message in conversations_client(phone_number, incoming_message):
                 resp.message(message)
-
             # resp.message(twilio_studio_flow(phone_number))
-
         else:
             resp.message(
                 'Lo sentimos, no pudimos validar tu numero de telefono 😟')
     else:
-        resp.message('Hola, bienvenido a Homada')
+        resp.message("""Hola, bienvenido a Homada
+        Para la creación de una reservación es necesario crear el cliente con los siguientes datos:
+        - Nombre
+        - teléfono
+        - Email
+        - número de reservación
+        - día de llegada
+        - hora de llegada
+        - día de partida
+        - hora de partida
+        - ubicación
+        """)
+        conversations_homada(incoming_message)
 
     return str(resp)
 

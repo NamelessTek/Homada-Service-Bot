@@ -49,22 +49,3 @@ def incoming_message_data() -> str:
         response.update({'sucess': True, 'message': message, 'message': f'{message}', 'status_code': 200, 'error': None, 'code': f'{code}'} if message and message != [{}]else {
             'sucess': False,  'message': 'Message could not be sent', 'status_code': 400, 'error': f'{error}', 'code': f'{code}'})
         return message
-
-
-@twilio.route('/answer/<question_id>', methods=['POST'])
-def answer(question_id):
-    question = Questions.query.filter_by(id=question_id)
-    #Guardar respuesta en db
-
-    next_question = question.next()
-    if next_question:
-        return redirect_twiml(next_question)
-    else:
-        return goodbye_twiml()
-
-
-@twilio.route('/question/<question_id>')
-def question(question_id):
-    question = Questions.query.filter_by(id=question_id)
-    session['question_id'] = question.id
-    return sms_twiml(question)
