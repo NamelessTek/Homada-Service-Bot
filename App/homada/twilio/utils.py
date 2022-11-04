@@ -90,21 +90,21 @@ def conversations_homada(incoming_message: str):
 
     if incoming_message:
         if 'question_id' in session:
-            question = Questions.query.filter_by(id=session['question_id'])
             # Guardar respuesta en db
 
-            id_next_question = session['question_id'] + 1
-            next_question = Questions.query.filter_by(id=id_next_question)
+            # id_next_question = session['question_id'] + 1
+            next_question = Questions.query.filter_by(id=1).first()
             if next_question:
                 session['question_id'] = next_question.id
-                response.message(next_question.question)
+                messages.append(response.message(next_question.question))
             else:
-                response.message(goodbye_twiml())
+                messages.append(response.message(goodbye_twiml()))
         else:
             print("Primera pregunta", flush=True)
             pregunta = redirect_to_first_question()
-            print("Pregunta "+ pregunta, flush=True)
-            response.message(pregunta)
+            print("Pregunta " + pregunta, flush=True)
+            messages.append(pregunta)
+            messages.append("primera preguntas")
     else:
         pass
 
@@ -179,7 +179,8 @@ def incoming_message() -> str:
         - hora de partida
         - ubicación
         """)
-        conversations_homada(incoming_message)
+        for message in conversations_homada(incoming_message):
+            resp.message(message)
 
     return str(resp)
 
