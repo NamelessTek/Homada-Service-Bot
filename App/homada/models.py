@@ -1,9 +1,28 @@
-from http import client
 from homada import db
 from dataclasses import dataclass
 from datetime import datetime
 from homada.relations import *
-# from wtforms.validators import SelectField
+
+
+@dataclass
+class Admin(db.Model):
+    '''
+    Admin model
+    '''
+    __tablename__ = 'Admin'
+    id: int = db.Column(db.Integer, primary_key=True,
+                        autoincrement=True, nullable=False)
+    name: str = db.Column(db.String(50), nullable=False)
+    phone: str = db.Column(db.String(50), nullable=False)
+    email: str = db.Column(db.String(50), nullable=False)
+    status: bool = db.Column(db.Boolean, nullable=False)
+    creation_date: str = db.Column(
+        db.DateTime, nullable=False, default=datetime.now)
+    last_update: str = db.Column(
+        db.TIMESTAMP, nullable=False, default=datetime.now, onupdate=datetime.now)
+
+    def __repr__(self):
+        return {column.capitalize(): getattr(self, column) for column in [column.name for column in self.__table__.columns]}
 
 
 @dataclass
@@ -34,8 +53,7 @@ class Ubicacion(db.Model):
         'Booking', backref='ubicacion', lazy='dynamic')
 
     def __repr__(self) -> dict:
-        return {"ID": self.id, "Ubicacion": self.ubicacion, "URL": self.url, "Direccion": self.direccion, "SSID": self.ssid, "Clave": self.clave, "Modem": self.modem,
-                "Mascotas": self.mascotas, "Status": self.status, "Option": self.option, "Creation Date": self.creation_date, "Last Update": self.last_update}
+        return {column.capitalize(): getattr(self, column) for column in [column.name for column in self.__table__.columns]}
 
     def __str__(self) -> str:
         return self.ubicacion
@@ -57,8 +75,8 @@ class Option(db.Model):
         db.TIMESTAMP, nullable=False, default=datetime.now, onupdate=datetime.now)
 
     def __repr__(self) -> dict:
-        return {"ID": self.id, "Option": self.option, "Value": self.value,
-                "Creation Date": self.creation_date, "Last Update": self.last_update}
+        return {column.capitalize(): getattr(self, column) for column in [column.name for column in self.__table__.columns]}
+
 
 @dataclass
 class Questions(db.Model):
@@ -72,7 +90,8 @@ class Questions(db.Model):
     type_question: str = db.Column(db.String(50), nullable=False)
 
     def __repr__(self) -> dict:
-        return {"ID": self.id, "Question": self.question, "Type_Question": self.type_question}
+        return {column.capitalize(): getattr(self, column) for column in [column.name for column in self.__table__.columns]}
+
 
 @dataclass
 class Client(db.Model):
@@ -98,8 +117,7 @@ class Client(db.Model):
         'Booking', backref='client', lazy='dynamic')
 
     def __repr__(self) -> dict:
-        return {"ID": self.id, "Name": self.name, "Last Name": self.last_name, "Email": self.email, "Phone": self.phone, "Status": self.status,
-                "Creation Date": self.creation_date, "Last Update": self.last_update}
+        return {column.capitalize(): getattr(self, column) for column in [column.name for column in self.__table__.columns]}
 
     def __str__(self) -> str:
         return self.name
