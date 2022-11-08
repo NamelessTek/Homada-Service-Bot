@@ -130,11 +130,10 @@ def conversations_homada(incoming_message: str) -> list:
                 session['revision'] = 1                
                 if 'question_id' in session:
                     del session['question_id']
-                #Mensaje de revision
+                    #Mensaje de revision
 
         elif 'revision' in session:
             if incoming_message == "Si":
-                #Guardar info
                 save_reservation()
                 messages.append(goodbye_twiml())
             else:
@@ -165,9 +164,14 @@ def save_reservation():
     dia_salida_cliente = session['dia_salida_cliente']
     ubicacion_cliente = session['ubicacion_cliente']
     ubicacion = Ubicacion.query.filter_by(ubicacion=ubicacion_cliente).first()
-    #hrs de ubicacion 
+    arrival_time=ubicacion.arrival_time
+    departure_time = ubicacion.departure_time
 
-    booking = Booking(booking_number=num_reservacion_cliente,arrival=dia_llegada_cliente,departure=dia_salida_cliente, client=client, ubicacion=ubicacion, status=True)
+    booking = Booking(booking_number=num_reservacion_cliente,arrival=dia_llegada_cliente,departure=dia_salida_cliente, client=client, ubicacion=ubicacion, status=1,
+     arrival_time=arrival_time,departure_time=departure_time)
+
+    db.session.add(booking)
+    db.session.commit()
 
 def redirect_to_first_question():
     first_question = Questions.query.order_by(Questions.id).first()

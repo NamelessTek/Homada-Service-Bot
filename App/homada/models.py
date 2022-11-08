@@ -143,7 +143,7 @@ class Booking(db.Model):
         db.DateTime, nullable=False, default=datetime.now)
     last_update: str = db.Column(
         db.TIMESTAMP, nullable=False, default=datetime.now, onupdate=datetime.now)
-    status: bool = db.Column(db.Boolean, nullable=False)
+    status: int = db.Column(db.Integer, nullable=False)
 
     def __repr__(self) -> dict:
         # convert to dict and capitalize first letter of each key and captilize ID
