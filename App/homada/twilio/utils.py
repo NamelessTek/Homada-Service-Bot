@@ -1,4 +1,5 @@
 from homada.models import Ubicacion, Client, Booking, Questions
+from homada import db
 from homada.ubicacion.utils import get_ubicacion
 from homada.reservaciones.utils import get_booking
 from twilio.twiml.messaging_response import MessagingResponse
@@ -90,7 +91,32 @@ def conversations_homada(incoming_message: str) -> list:
 
     if incoming_message:
         if 'question_id' in session:
-            # Guardar respuesta en db
+            question_id = session['question_id']
+            
+            print(question_id, flush=True)
+            # Answer saved
+            match question_id:
+                case 1:
+                    session['nombre_cliente'] = incoming_message
+                    print("Nombre del cliente "+ str(session['nombre_cliente']), flush=True)
+                case 2:
+                    session['telefono_cliente'] = incoming_message
+                    print("Telefono del cliente "+ str(session['telefono_cliente']), flush=True)
+                case 3:
+                    session['email_cliente'] = incoming_message
+                    print("Email del cliente "+ str(session['email_cliente']), flush=True)
+                case 4:
+                    session['num_reservacion_cliente'] = incoming_message
+                    print("Num Reservacion del cliente "+ str(session['num_reservacion_cliente']), flush=True)
+                case 5:
+                    session['dia_llegada_cliente'] = incoming_message
+                    print("Dia Llegada del cliente "+ str(session['dia_llegada_cliente']), flush=True)
+                case 6:
+                    session['dia_salida_cliente'] = incoming_message
+                    print("Dia Salida del cliente "+ str(session['dia_salida_cliente']), flush=True)
+                case 7:
+                    session['ubicacion_cliente'] = incoming_message
+                    print("Ubicacion del cliente "+ str(session['ubicacion_cliente']), flush=True)
 
             next_id_question = int(session['question_id'])+1
             print("Siguiente pregunta", flush=True)
@@ -101,18 +127,46 @@ def conversations_homada(incoming_message: str) -> list:
                 session['question_id'] = next_question.id
                 messages.append(next_question.question)
             else:
+                session['revision'] = 1                
+                if 'question_id' in session:
+                    del session['question_id']
+                #Mensaje de revision
+
+        elif 'revision' in session:
+            if incoming_message == "Si":
+                #Guardar info
+                save_reservation()
+                messages.append(goodbye_twiml())
+            else:
                 messages.append(goodbye_twiml())
         else:
             print("Primera pregunta", flush=True)
             pregunta = redirect_to_first_question()
             print("Pregunta " + pregunta, flush=True)
             messages.append(pregunta)
-            messages.append("primera preguntas")
     else:
         pass
 
     return messages
 
+def save_reservation():
+
+    name = session['nombre_cliente']
+    phone = session['telefono_cliente']
+    email = session['email_cliente']
+    
+    client = Client(name=name, phone=phone, email=email)
+    db.session.add(client)
+    db.session.commit()
+    
+    client = Client.query.filter_by(email=email).first()
+    num_reservacion_cliente = session['num_reservacion_cliente']
+    dia_llegada_cliente = session['dia_llegada_cliente']
+    dia_salida_cliente = session['dia_salida_cliente']
+    ubicacion_cliente = session['ubicacion_cliente']
+    ubicacion = Ubicacion.query.filter_by(ubicacion=ubicacion_cliente).first() 
+
+    booking = Booking(booking_number=num_reservacion_cliente,arrival=dia_llegada_cliente,departure=dia_salida_cliente)
 
 def redirect_to_first_question():
     first_question = Questions.query.order_by(Questions.id).first()
@@ -139,8 +193,6 @@ def welcome_user(send_function):
 def goodbye_twiml():
     response = MessagingResponse()
     response.message("Thank you for answering our survey. Good bye!")
-    if 'question_id' in session:
-        del session['question_id']
     return str(response)
 
 
