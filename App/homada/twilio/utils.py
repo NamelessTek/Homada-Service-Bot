@@ -122,8 +122,8 @@ def conversations_homada(incoming_message: str) -> list:
             print("Siguiente pregunta", flush=True)
             next_question = Questions.query.filter_by(
                 id=next_id_question).first()
-            print("Pregunta siguiente " + next_question.question, flush=True)
             if next_question:
+                print("Pregunta siguiente " + next_question.question, flush=True)
                 session['question_id'] = next_question.id
                 messages.append(next_question.question)
             else:
