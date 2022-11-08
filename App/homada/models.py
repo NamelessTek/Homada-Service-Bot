@@ -102,10 +102,9 @@ class Client(db.Model):
 
     id: int = db.Column(db.Integer, primary_key=True,
                         autoincrement=True, nullable=False)
-    name: str = db.Column(db.String(280), nullable=False)
-    last_name: str = db.Column(db.String(280), nullable=False)
+    name: str = db.Column(db.String(460), nullable=False)
     phone: str = db.Column(db.String(280), nullable=False)
-    status = db.Column(db.Boolean, nullable=False)
+    status: int = db.Column(db.Integer, nullable=False, default=1)
     email: str = db.Column(db.String(280), nullable=True)
     creation_date: str = db.Column(
         db.DateTime, nullable=False, default=datetime.now)
