@@ -7,6 +7,7 @@ from twilio.twiml.messaging_response import MessagingResponse
 from homada import client as twilio_client
 from flask import Flask, request, url_for, session, redirect
 import phonenumbers
+import datetime
 
 
 def validate_phone_number(phone_number: str) -> bool:
@@ -169,9 +170,12 @@ def save_reservation():
 
     client = Client.query.filter_by(email=email).first()
     num_reservacion_cliente = session['num_reservacion_cliente']
-    dia_llegada_cliente = session['dia_llegada_cliente']
-    dia_salida_cliente = session['dia_salida_cliente']
+    dia_llegada_cliente = datetime.datetime.strptime(
+                session['dia_llegada_cliente'], '%d-%m-%Y')
+    dia_salida_cliente = datetime.datetime.strptime(
+                session['dia_salida_cliente'], '%d-%m-%Y')
     ubicacion_cliente = session['ubicacion_cliente']
+
     ubicacion = Ubicacion.query.filter_by(ubicacion=ubicacion_cliente).first()
     arrival_time = ubicacion.arrival_time
     departure_time = ubicacion.departure_time

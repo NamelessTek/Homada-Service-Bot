@@ -1,3 +1,8 @@
+SET NAMES utf8;
+SET time_zone = '+00:00';
+SET foreign_key_checks = 0;
+SET sql_mode = 'NO_AUTO_VALUE_ON_ZERO';
+
 DROP TABLE IF EXISTS `Questions`;
 CREATE TABLE `Questions` (
   `ID` int(11) NOT NULL AUTO_INCREMENT,
@@ -8,9 +13,9 @@ CREATE TABLE `Questions` (
 
 INSERT INTO `Questions` (`ID`, `Question`, `Type_Question`) VALUES
 (1,	'¿Cuál es el nombre del cliente?',	'Reserva'),
-(2,	' ¿Cuál es el teléfono del cliente?',	'Reserva'),
+(2,	'¿Cuál es el teléfono del cliente?',	'Reserva'),
 (3,	'¿Cuál es el email del cliente?',	'Reserva'),
 (4,	'¿Cuál es el número de reservación del cliente?',	'Reserva'),
-(5,	'¿Cuál es el día de llegada del cliente?',	'Reserva'),
+(5,	'¿Cuál es el dí­a de llegada del cliente?',	'Reserva'),
 (6,	'¿Cuál es el día de salida del cliente?',	'Reserva'),
 (7,	'¿Cuál es la ubicación en la que se hospedara el cliente?',	'Reserva');

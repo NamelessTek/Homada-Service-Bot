@@ -133,8 +133,8 @@ class Booking(db.Model):
     id: int = db.Column(db.Integer, primary_key=True,
                         autoincrement=True, nullable=False)
     booking_number: str = db.Column(db.String(280), nullable=False)
-    arrival: str = db.Column(db.Date, nullable=False)
-    departure: str = db.Column(db.Date, nullable=False)
+    arrival = db.Column(db.Date, nullable=False)
+    departure = db.Column(db.Date, nullable=False)
 
     ubicacion_id: int = db.Column(db.Integer, db.ForeignKey(
         'Ubicacion.id'), nullable=False,)
