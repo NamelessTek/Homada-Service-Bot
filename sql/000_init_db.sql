@@ -1,14 +1,23 @@
 -- Adminer 4.8.1 MySQL 5.7.39 dump
 
 SET NAMES utf8;
+
 SET time_zone = '+00:00';
+
 SET foreign_key_checks = 0;
+
 SET sql_mode = 'NO_AUTO_VALUE_ON_ZERO';
+
 DROP TABLE IF EXISTS `Admin`;
+
 set character_set_client = 'utf8';
+
 set character_set_connection = 'utf8';
+
 set character_set_database = 'utf8';
+
 set character_set_results = 'utf8';
+
 set character_set_server = 'utf8';
 
 CREATE TABLE
@@ -33,6 +42,8 @@ CREATE TABLE
         `Departure` date NOT NULL,
         `Ubicacion_id` int(11) NOT NULL,
         `Cliente_id` int(11) NOT NULL,
+        `Arrival_time` time NOT NULL,
+        `Departure_time` time NOT NULL,
         `Creation_date` datetime NOT NULL,
         `Last_update` timestamp NOT NULL,
         `Status` int(11) NOT NULL,
