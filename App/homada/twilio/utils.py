@@ -23,24 +23,15 @@ def validate_phone_number(phone_number: str) -> bool:
         return False
 
 
-def goodby_message() -> str:
-    '''
-    Goodbye message
-    '''
-    resp = MessagingResponse()
-    resp.message('Adios 😃')
-    return str(resp)
-
-
 def conversations_client(phone_number: str, incoming_message: str) -> list:
     '''
     Conversations with the user
     '''
-    response = MessagingResponse()
     messages = []
     client = Client.query.filter_by(phone=phone_number).first()
     booking = get_booking(
         Booking.query.filter_by(cliente_id=client.id).first())
+
     ubicacion = get_ubicacion(
         Ubicacion.query.filter_by(id=booking['Ubicacion_id']).first())
 
@@ -51,8 +42,8 @@ def conversations_client(phone_number: str, incoming_message: str) -> list:
                     f'¡Hola {client.name}! Hola bienvenido a Homada, muchas gracias por tu preferencia']
                 if booking:
                     messages.extend(
-                        [f'{client.name}, para tu entradad el día {booking["Arrival"].strftime("%d/%m/%Y")}, queremos compartirte algunos datos. La hora de entrada es a las {booking["Arrival_time"].strftime("%H:%M")}. Sabemos que puedes necesitar conexión a internet, la red es {ubicacion["SSID"]} y el password es {ubicacion["Clave"]}.',
-                         f'Para tu facilidad, el link de navegación es el siguiente: {ubicacion["URL"]}.',
+                        [f'{client.name}, para tu entradad el día {booking["Arrival"].strftime("%d/%m/%Y")}, queremos compartirte algunos datos. La hora de entrada es a las {booking["Arrival_time"].strftime("%H:%M")}. Sabemos que puedes necesitar conexión a internet, la red es {ubicacion["Ssid"]} y el password es {ubicacion["Clave"]}.',
+                         f'Para tu facilidad, el link de navegación es el siguiente: {ubicacion["Url"]}.',
                          'En caso de necesitar apoyo por favor escribe en el chat la palabra "menú"'])
                 else:
                     messages.append(
@@ -270,7 +261,7 @@ def incoming_message() -> str:
     phone_number = request.values.get('From', None).replace('whatsapp:', '')
     resp = MessagingResponse()
     admin = get_admin(phone_number)
-    if phone_number != admin["phone"]:
+    if phone_number != "+5215554060855":
         # Client conversation
         if validate_phone_number(phone_number) and incoming_message:
             for message in conversations_client(phone_number, incoming_message):

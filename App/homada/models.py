@@ -55,7 +55,7 @@ class Ubicacion(db.Model):
         'Booking', backref='ubicacion', lazy='dynamic')
 
     def __repr__(self) -> dict:
-        return {column.capitalize(): getattr(self, column) for column in [column.name for column in self.__table__.columns]}
+        return {"Ubiacion": self.ubicacion, "Direccion": self.direccion, "Url": self.url, "Ssid": self.ssid, "Clave": self.clave, "Modem": self.modem, "Mascotas": self.mascotas, "Arrival_time": self.arrival_time, "Departure_time": self.departure_time, "Status": self.status, "Option": self.option, "Creation_date": self.creation_date, "Last_update": self.last_update}
 
     def __str__(self) -> str:
         return self.ubicacion
