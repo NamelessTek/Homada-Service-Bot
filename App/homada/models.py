@@ -15,7 +15,7 @@ class Admin(db.Model):
     name: str = db.Column(db.String(50), nullable=False)
     phone: str = db.Column(db.String(50), nullable=False)
     email: str = db.Column(db.String(50), nullable=False)
-    status: bool = db.Column(db.Boolean, nullable=False)
+    status: bool = db.Column(db.Boolean, nullable=False,)
     creation_date: str = db.Column(
         db.DateTime, nullable=False, default=datetime.now)
     last_update: str = db.Column(
@@ -41,7 +41,9 @@ class Ubicacion(db.Model):
     clave: str = db.Column(db.String(280), nullable=True)
     modem: str = db.Column(db.String(280), nullable=True)
     mascotas: bool = db.Column(db.Boolean, nullable=False)
-    status: bool = db.Column(db.Boolean, nullable=False)
+    arrival_time: str = db.Column(db.Time, nullable=False)
+    departure_time: str = db.Column(db.Time, nullable=False)
+    status: bool = db.Column(db.Boolean, nullable=False, default=True)
     option: str = db.Column(db.String(280), nullable=True)
     creation_date: str = db.Column(
         db.DateTime, nullable=False, default=datetime.now)
@@ -132,9 +134,8 @@ class Booking(db.Model):
                         autoincrement=True, nullable=False)
     booking_number: str = db.Column(db.String(280), nullable=False)
     arrival: str = db.Column(db.Date, nullable=False)
-    arrival_time: str = db.Column(db.Time, nullable=False)
     departure: str = db.Column(db.Date, nullable=False)
-    departure_time: str = db.Column(db.Time, nullable=False)
+
     ubicacion_id: int = db.Column(db.Integer, db.ForeignKey(
         'Ubicacion.id'), nullable=False,)
     cliente_id: int = db.Column(db.Integer, db.ForeignKey(
@@ -143,7 +144,7 @@ class Booking(db.Model):
         db.DateTime, nullable=False, default=datetime.now)
     last_update: str = db.Column(
         db.TIMESTAMP, nullable=False, default=datetime.now, onupdate=datetime.now)
-    status: bool = db.Column(db.Boolean, nullable=False)
+    status: bool = db.Column(db.Boolean, nullable=False,)
 
     def __repr__(self) -> dict:
         # convert to dict and capitalize first letter of each key and captilize ID
