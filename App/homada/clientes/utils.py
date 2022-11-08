@@ -9,7 +9,7 @@ def get_client(client: Client) -> dict:
     '''
     Get client data
     '''
-    return Client.__repr__(Client.query.filter_by(id=client).first())
+    return Client.__repr__(Client.query.filter_by(phone=client).first())
 
 
 def create_client(name: str, last_name: str, phone: str, email: str) -> dict:

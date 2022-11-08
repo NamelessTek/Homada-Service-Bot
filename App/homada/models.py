@@ -140,6 +140,8 @@ class Booking(db.Model):
         'Ubicacion.id'), nullable=False,)
     cliente_id: int = db.Column(db.Integer, db.ForeignKey(
         'Client.id'), nullable=False)
+    arrival_time: str = db.Column(db.Time, nullable=False)
+    departure_time: str = db.Column(db.Time, nullable=False)
     creation_date: str = db.Column(
         db.DateTime, nullable=False, default=datetime.now)
     last_update: str = db.Column(

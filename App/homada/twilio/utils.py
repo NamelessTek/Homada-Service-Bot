@@ -2,6 +2,7 @@ from homada.models import Ubicacion, Client, Booking, Questions
 from homada import db
 from homada.ubicacion.utils import get_ubicacion
 from homada.admin.utils import get_admin
+from homada.clientes.utils import get_client
 from homada.reservaciones.utils import get_booking
 from twilio.twiml.messaging_response import MessagingResponse
 from homada import client as twilio_client
@@ -48,11 +49,6 @@ def conversations_client(phone_number: str, incoming_message: str) -> list:
             case 'hola':
                 messages = [
                     f'¡Hola {client.name}! Hola bienvenido a Homada, muchas gracias por tu preferencia']
-                # if len(booking) > 1:
-                #     messages = [f'{client.name} tienes {len(booking)} reservaciones',
-                #                 f'¿De qué ubicación quieres saber la informacion?']
-                # messages.extend(
-                #     f'{index + 1}. {ubicacion["Ubicacion"]}' for index, ubicacion in enumerate(booking))
                 if booking:
                     messages.extend(
                         [f'{client.name}, para tu entradad el día {booking["Arrival"].strftime("%d/%m/%Y")}, queremos compartirte algunos datos. La hora de entrada es a las {booking["Arrival_time"].strftime("%H:%M")}. Sabemos que puedes necesitar conexión a internet, la red es {ubicacion["SSID"]} y el password es {ubicacion["Clave"]}.',
@@ -64,16 +60,6 @@ def conversations_client(phone_number: str, incoming_message: str) -> list:
             case 'adios':
                 messages.append(
                     f'¡Adios {client.name}! Esperamos verte pronto 😃')
-            # case 'menu':
-            #     messages.append(
-            #         f'¡Hola {client.name}! Estos son los servicios que ofrecemos: \n 1. Ubicacion \n 2. Reservacion \n 3. Cancelar reservacion \n 4. Salir')
-            case 'crear usuario':
-                if 'question_id' in session:
-                    pass
-                    # Sent to conversation to get answer
-                    # response.redirect(
-                    #
-
             case _:
                 messages.append(
                     f'No pude entender tu respuesta 😟 Inténtalo nuevamente 👇🏼 o escribe menu para desplegar las opciones con las que podemos apoyarte.')
@@ -105,6 +91,8 @@ def conversations_homada(incoming_message: str) -> list:
 
                 case 2:
                     if incoming_message != Client.query.filter_by(phone=incoming_message).first():
+                        print(Client.query.filter_by(
+                            phone=incoming_message).first(), flush=True)
                         session['telefono_cliente'] = incoming_message
                         print("Telefono del cliente " +
                               str(session['telefono_cliente']), flush=True)
@@ -132,13 +120,16 @@ def conversations_homada(incoming_message: str) -> list:
                     session['ubicacion_cliente'] = incoming_message
                     print("Ubicacion del cliente " +
                           str(session['ubicacion_cliente']), flush=True)
+                case _:
+                    pass
 
             next_id_question = int(session['question_id'])+1
             print("Siguiente pregunta", flush=True)
             next_question = Questions.query.filter_by(
                 id=next_id_question).first()
             if next_question:
-                print("Pregunta siguiente " + next_question.question, flush=True)
+                print("Pregunta siguiente " +
+                      next_question.question, flush=True)
                 session['question_id'] = next_question.id
                 messages.append(next_question.question)
             else:
@@ -177,9 +168,9 @@ def save_reservation():
     client = Client.query.filter_by(email=email).first()
     num_reservacion_cliente = session['num_reservacion_cliente']
     dia_llegada_cliente = datetime.datetime.strptime(
-                session['dia_llegada_cliente'], '%d-%m-%Y')
+        session['dia_llegada_cliente'], '%d-%m-%Y')
     dia_salida_cliente = datetime.datetime.strptime(
-                session['dia_salida_cliente'], '%d-%m-%Y')
+        session['dia_salida_cliente'], '%d-%m-%Y')
     ubicacion_cliente = session['ubicacion_cliente']
 
     ubicacion = Ubicacion.query.filter_by(ubicacion=ubicacion_cliente).first()
@@ -216,9 +207,7 @@ def welcome_user(send_function):
 
 
 def goodbye_twiml():
-    response = MessagingResponse()
-    response.message("Thank you for answering our survey. Good bye!")
-    return str(response)
+    return "Thank you for answering our survey. Good bye!"
 
 
 def sms_twiml(question):
