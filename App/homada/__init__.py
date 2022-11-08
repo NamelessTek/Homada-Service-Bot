@@ -7,7 +7,6 @@ from flask import Flask
 from homada.config import Config
 from flask_cors import CORS
 from twilio.rest import Client
-from flask_admin import Admin
 from flask_admin.contrib.sqla import ModelView
 from flask_session import Session
 
@@ -42,14 +41,13 @@ def create_app(config_class=Config):
     from homada.twilio.routes import twilio
     from homada.clientes.routes import cliente
     from homada.reservaciones.routes import reservacion
-    from homada.users.routes import user
+    from homada.admin.routes import admin_homada
 
     app.config.from_object(Config)
     app.register_blueprint(location)
     app.register_blueprint(twilio)
     app.register_blueprint(cliente)
     app.register_blueprint(reservacion)
-    app.register_blueprint(user)
+    app.register_blueprint(admin_homada)
 
-    # admin.add_view(ModelView(Ubicacion, db.session))
     return app

@@ -22,7 +22,7 @@ class Admin(db.Model):
         db.TIMESTAMP, nullable=False, default=datetime.now, onupdate=datetime.now)
 
     def __repr__(self):
-        return {column.capitalize(): getattr(self, column) for column in [column.name for column in self.__table__.columns]}
+        return {column.name: getattr(self, column.name) for column in self.__table__.columns}
 
 
 @dataclass

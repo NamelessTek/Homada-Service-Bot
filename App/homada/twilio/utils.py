@@ -1,5 +1,6 @@
-from homada.models import Ubicacion, Client, Booking, Questions
+from homada.models import *
 from homada.ubicacion.utils import get_ubicacion
+from homada.admin.utils import get_admin
 from homada.reservaciones.utils import get_booking
 from twilio.twiml.messaging_response import MessagingResponse
 from homada import client as twilio_client
@@ -159,13 +160,13 @@ def incoming_message() -> str:
     # Get the phone number of the person sending the text message
     phone_number = request.values.get('From', None).replace('whatsapp:', '')
     resp = MessagingResponse()
+    print(get_admin())
     # if the phone number is valid
-    if phone_number != "+5215571967146" and phone_number != "+5215554060855":
+    if phone_number != get_admin():
         # Client conversation
         if validate_phone_number(phone_number) and incoming_message:
             for message in conversations_client(phone_number, incoming_message):
                 resp.message(message)
-            # resp.message(twilio_studio_flow(phone_number))
         else:
             resp.message(
                 'Lo sentimos, no pudimos validar tu numero de telefono 😟')
