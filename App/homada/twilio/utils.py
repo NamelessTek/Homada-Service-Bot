@@ -164,9 +164,10 @@ def save_reservation():
     dia_llegada_cliente = session['dia_llegada_cliente']
     dia_salida_cliente = session['dia_salida_cliente']
     ubicacion_cliente = session['ubicacion_cliente']
-    ubicacion = Ubicacion.query.filter_by(ubicacion=ubicacion_cliente).first() 
+    ubicacion = Ubicacion.query.filter_by(ubicacion=ubicacion_cliente).first()
+    #hrs de ubicacion 
 
-    booking = Booking(booking_number=num_reservacion_cliente,arrival=dia_llegada_cliente,departure=dia_salida_cliente)
+    booking = Booking(booking_number=num_reservacion_cliente,arrival=dia_llegada_cliente,departure=dia_salida_cliente, client=client, ubicacion=ubicacion, status=True)
 
 def redirect_to_first_question():
     first_question = Questions.query.order_by(Questions.id).first()
