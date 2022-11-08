@@ -21,7 +21,7 @@ class Admin(db.Model):
     last_update: str = db.Column(
         db.TIMESTAMP, nullable=False, default=datetime.now, onupdate=datetime.now)
 
-    def __repr__(self):
+    def __repr__(self) -> dict:
         return {column.name: getattr(self, column.name) for column in self.__table__.columns}
 
 

@@ -101,10 +101,16 @@ def conversations_homada(incoming_message: str) -> list:
                     session['nombre_cliente'] = incoming_message
                     print("Nombre del cliente " +
                           str(session['nombre_cliente']), flush=True)
+
                 case 2:
-                    session['telefono_cliente'] = incoming_message
-                    print("Telefono del cliente " +
-                          str(session['telefono_cliente']), flush=True)
+                    if incoming_message != Client.query.filter_by(phone=incoming_message).first():
+                        session['telefono_cliente'] = incoming_message
+                        print("Telefono del cliente " +
+                              str(session['telefono_cliente']), flush=True)
+                    else:
+                        messages.append(
+                            f'El número de teléfono ya existe, por favor ingresa otro')
+                        question_id = 2
                 case 3:
                     session['email_cliente'] = incoming_message
                     print("Email del cliente " +
@@ -226,9 +232,8 @@ def incoming_message() -> str:
     # Get the phone number of the person sending the text message
     phone_number = request.values.get('From', None).replace('whatsapp:', '')
     resp = MessagingResponse()
-    print(get_admin())
-    # if the phone number is valid
-    if phone_number != get_admin():
+    admin = get_admin(phone_number)
+    if phone_number != admin["phone"]:
         # Client conversation
         if validate_phone_number(phone_number) and incoming_message:
             for message in conversations_client(phone_number, incoming_message):
