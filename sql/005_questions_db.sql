@@ -16,6 +16,6 @@ INSERT INTO `Questions` (`ID`, `Question`, `Type_Question`) VALUES
 (2,	'¿Cuál es el teléfono del cliente?',	'Reserva'),
 (3,	'¿Cuál es el email del cliente?',	'Reserva'),
 (4,	'¿Cuál es el número de reservación del cliente?',	'Reserva'),
-(5,	'¿Cuál es el dí­a de llegada del cliente?',	'Reserva'),
-(6,	'¿Cuál es el día de salida del cliente?',	'Reserva'),
+(5,	'¿Cuál es el dí­a de llegada del cliente? Formato dia-mes-año',	'Reserva'),
+(6,	'¿Cuál es el día de salida del cliente? Formato dia-mes-año',	'Reserva'),
 (7,	'¿Cuál es la ubicación en la que se hospedara el cliente?',	'Reserva');

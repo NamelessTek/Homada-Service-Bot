@@ -118,6 +118,10 @@ def conversations_homada(incoming_message: str) -> list:
                           str(session['dia_salida_cliente']), flush=True)
                 case 7:
                     session['ubicacion_cliente'] = incoming_message
+                    ubicacion_query = Ubicacion.query.filter_by(
+                        ubicacion=session['ubicacion_cliente']).first()
+                    session['hr_llegada_cliente'] = ubicacion_query.arrival_time
+                    session['hr_salida_cliente'] = ubicacion_query.departure_time
                     print("Ubicacion del cliente " +
                           str(session['ubicacion_cliente']), flush=True)
                 case _:
@@ -136,13 +140,17 @@ def conversations_homada(incoming_message: str) -> list:
                 session['revision'] = 1
                 if 'question_id' in session:
                     del session['question_id']
-                    # Mensaje de revision
+                review_message = review_user()
+                messages.append(review_message)
 
         elif 'revision' in session:
-            if incoming_message == "Si":
+            print("En revision", flush=True)
+            print(incoming_message, flush=True)
+            if incoming_message == "si":
                 save_reservation()
                 messages.append(goodbye_twiml())
             else:
+                # Mensaje de que se repetira el ciclo?
                 messages.append(goodbye_twiml())
         else:
             print("Primera pregunta", flush=True)
@@ -153,6 +161,23 @@ def conversations_homada(incoming_message: str) -> list:
         pass
 
     return messages
+
+
+def delete_session():
+    if 'question_id' in session:
+        del session['question_id']
+
+    if 'revision' in session:
+        del session['revision']
+    del session['nombre_cliente']
+    del session['telefono_cliente']
+    del session['email_cliente']
+    del session['num_reservacion_cliente']
+    del session['dia_llegada_cliente']
+    del session['dia_salida_cliente']
+    del session['ubicacion_cliente']
+    del session['hr_llegada_cliente']
+    del session['hr_salida_cliente']
 
 
 def save_reservation():
@@ -192,7 +217,7 @@ def redirect_to_first_question():
 
 def welcome_user(send_function):
     welcome_text = """Para la creación de una reservación es necesario crear el cliente con los siguientes datos:
-                    - Nombre
+                    - Nombre 
                     - teléfono
                     - Email
                     - número de reservación
@@ -202,12 +227,31 @@ def welcome_user(send_function):
                     - hora de partida
                     - ubicación
                     """
-    # send_function(welcome_text)
     return welcome_text
 
 
+def review_user():
+    review_text = f'''Puedes confirmar los siguientes datos:
+                    - Nombre {session['nombre_cliente']}
+                    - teléfono {session['telefono_cliente']}
+                    - Email {session['email_cliente']}
+                    - número de reservación {session['num_reservacion_cliente']}
+                    - día de llegada {session['dia_llegada_cliente']}
+                    - hora de llegada {session['hr_llegada_cliente']}
+                    - día de partida {session['dia_salida_cliente']}
+                    - hora de partida {session['hr_salida_cliente']}
+                    - ubicación {session['ubicacion_cliente']}
+
+                    Contesta con un si o un no
+                    '''
+    return review_text
+
+
 def goodbye_twiml():
-    return "Thank you for answering our survey. Good bye!"
+    mensaje = "Ya quedo creada la reservación " + \
+        session['num_reservacion_cliente'] + " :)"
+    delete_session()
+    return mensaje
 
 
 def sms_twiml(question):
@@ -235,48 +279,24 @@ def incoming_message() -> str:
             resp.message(
                 'Lo sentimos, no pudimos validar tu numero de telefono 😟')
     else:
-        if 'question_id' not in session:
-            resp.message("""Hola, bienvenido a Homada
-            Para la creación de una reservación es necesario crear el cliente con los siguientes datos:
-            - Nombre
-            - teléfono
-            - Email
-            - número de reservación
-            - día de llegada
-            - hora de llegada
-            - día de partida
-            - hora de partida
-            - ubicación
-            """)
+        if 'question_id' not in session and 'revision' not in session:
+            if 'revision' not in session:
+                resp.message("""Hola, bienvenido a Homada
+                Para la creación de una reservación es necesario crear el cliente con los siguientes datos:
+                - Nombre
+                - teléfono
+                - Email
+                - número de reservación
+                - día de llegada
+                - hora de llegada
+                - día de partida
+                - hora de partida
+                - ubicación
+                """)
         for message in conversations_homada(incoming_message):
             resp.message(message)
 
     return str(resp)
-
-
-def send_location_message(phone_number: str, message: str, ubicacion: int = Ubicacion.id) -> dict:
-    '''
-    Send message to a phone
-    '''
-    ubicacion_data = get_ubicacion(
-        Ubicacion.query.filter_by(id=ubicacion).first())
-    if phone_number and message:
-        match message:
-            case 1:
-                message = f'La ubicacion se encuentra en {ubicacion_data["Ubicacion"]}'
-            case _:
-                message = f'Oops! Algo salio mal, por favor intente mas tarde'
-        try:
-            message = twilio_client.messages.create(
-                to=phone_number,
-                from_="whatsapp:+14155238886",
-                body=message,
-            )
-        except Exception:
-            return {'sucess': False, 'message': 'Message could not be sent', 'status_code': 400, 'error': True, 'code': '4'}
-
-    else:
-        pass
 
 
 def send_question(phone_number: str, question_id: int) -> list:
