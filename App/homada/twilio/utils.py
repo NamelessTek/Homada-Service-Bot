@@ -10,7 +10,6 @@ from flask import Flask, request, url_for, session, redirect
 import phonenumbers
 import datetime
 
-
 def validate_phone_number(phone_number: str) -> bool:
     '''
     Validate phone number
@@ -22,13 +21,14 @@ def validate_phone_number(phone_number: str) -> bool:
     except Exception:
         return False
 
-def validate_reservation_number(reservation_number: str) -> bool:
+def validate_reservation_number(reservation_number: str,resp) -> bool:
     '''
     Validate reservation number
     '''
     try:
         reservation = Booking.query.filter_by(booking_number=reservation_number).first()
         session['reservacion']=reservation.booking_number
+        session['menu']=3
         return True
     except Exception:
         return False
@@ -50,31 +50,11 @@ def conversations_client(phone_number: str, incoming_message: str) -> list:
     if incoming_message:
         match incoming_message:
             case "1":
-                messages = [
-                    f'¡Hola {client.name}!, muchas gracias por tu preferencia']
-                if booking:
-                    messages.extend(
-                        [f'{client.name}, para tu entrada el día {booking["Arrival"].strftime("%d/%m/%Y")}, queremos compartirte algunos datos. ',
-                        f'Para tu facilidad, el link de navegación es el siguiente: {ubicacion["Url"]}.',
-                        'En caso de necesitar apoyo por favor escribe en el chat la palabra "menú"'])
-                    if 'menu' in session:
-                        delete_session()
-                else:
-                    messages.append(
-                        f'{client.name}, no tienes reservaciones, por favor haz una reservacion')
+                for message in flow_ubicacion(messages,client,booking,ubicacion):
+                    messages.append(message)
             case "3":
-                messages = [
-                    f'¡Hola {client.name}! Hola bienvenido a Homada, muchas gracias por tu preferencia']
-                if booking:
-                    messages.extend(
-                        [f'Sabemos que puedes necesitar conexión a internet, la red es {ubicacion["Ssid"]} y el password es {ubicacion["Clave"]}.',
-                        'En caso de necesitar apoyo por favor escribe en el chat la palabra "menú"'])
-                        
-                    if 'menu' in session:
-                        delete_session()
-                else:
-                    messages.append(
-                        f'{client.name}, no tienes reservaciones, por favor haz una reservacion')
+                for message in flow_red(messages,client,booking,ubicacion):
+                    messages.append(message)
             case _:
                 messages.append(
                     f'No pude entender tu respuesta 😟 Inténtalo nuevamente 👇🏼 o escribe menu para desplegar las opciones con las que podemos apoyarte.')
@@ -84,6 +64,60 @@ def conversations_client(phone_number: str, incoming_message: str) -> list:
 
     return messages
 
+def flow_red(messages,client,booking,ubicacion):
+    
+    if client:
+        messages = [f'¡Hola {client.name}! Hola bienvenido a Homada, muchas gracias por tu preferencia']
+        if booking:
+            messages.extend(
+                [f'Sabemos que puedes necesitar conexión a internet, la red es {ubicacion["Ssid"]} y el password es {ubicacion["Clave"]}.',
+                'En caso de necesitar apoyo por favor escribe en el chat la palabra "menú"'])
+                
+            if 'menu' in session:
+                delete_session()
+        else:
+            messages.append(
+                f'{client.name}, no tienes reservaciones, por favor haz una reservacion')
+    else:
+        messages = [f'¡Hola! Hola bienvenido a Homada, muchas gracias por tu preferencia']
+        if booking:
+            messages.extend(
+                [f'Sabemos que puedes necesitar conexión a internet, la red es {ubicacion["Ssid"]} y el password es {ubicacion["Clave"]}.',
+                'En caso de necesitar apoyo por favor escribe en el chat la palabra "menú"'])
+                
+            if 'menu' in session:
+                delete_session()
+        else:
+            messages.append(
+                f'{client.name}, no tienes reservaciones, por favor haz una reservacion')
+    return messages
+
+def flow_ubicacion(messages,client,booking,ubicacion):
+    if client:
+        messages = [f'¡Hola {client.name}!, muchas gracias por tu preferencia']
+        if booking:
+            messages.extend(
+                [f'{client.name}, para tu entrada el día {booking["Arrival"].strftime("%d/%m/%Y")}, queremos compartirte algunos datos. ',
+                f'Para tu facilidad, el link de navegación es el siguiente: {ubicacion["Url"]}.',
+                'En caso de necesitar apoyo por favor escribe en el chat la palabra "menú"'])
+            if 'menu' in session:
+                delete_session()
+        else:
+            messages.append(
+                f'{client.name}, no tienes reservaciones, por favor haz una reservacion')
+    else:
+        messages = [f'¡Hola!, muchas gracias por tu preferencia']
+        if booking:
+            messages.extend(
+                [f'Para tu entrada el día {booking["Arrival"].strftime("%d/%m/%Y")}, queremos compartirte algunos datos. ',
+                f'Para tu facilidad, el link de navegación es el siguiente: {ubicacion["Url"]}.',
+                'En caso de necesitar apoyo por favor escribe en el chat la palabra "menú"'])
+            if 'menu' in session:
+                delete_session()
+        else:
+            messages.append(
+                f'{client.name}, no tienes reservaciones, por favor haz una reservacion')
+    return messages
 
 def conversations_homada(incoming_message: str) -> list:
     '''
@@ -177,7 +211,7 @@ def conversations_homada(incoming_message: str) -> list:
 
     return messages
 
-def delete_session():
+def delete_session_completly():
     if 'question_id' in session:
         del session['question_id']
     if 'revision' in session:
@@ -204,6 +238,30 @@ def delete_session():
         del session['menu']
     if 'reservacion' in session:
         del session['reservacion']
+
+def delete_session():
+    if 'question_id' in session:
+        del session['question_id']
+    if 'revision' in session:
+        del session['revision']
+    if 'nombre_cliente' in session:
+        del session['nombre_cliente']
+    if 'telefono_cliente' in session:
+        del session['telefono_cliente']
+    if 'email_cliente' in session:
+        del session['email_cliente']
+    if 'num_reservacion_cliente' in session:
+        del session['num_reservacion_cliente']
+    if 'dia_llegada_cliente' in session:
+        del session['dia_llegada_cliente']
+    if 'dia_salida_cliente' in session:
+        del session['dia_salida_cliente']
+    if 'ubicacion_cliente' in session:
+        del session['ubicacion_cliente']
+    if 'hr_llegada_cliente' in session:
+        del session['hr_llegada_cliente']
+    if 'hr_salida_cliente' in session:
+        del session['hr_salida_cliente']
 
 def save_reservation():
 
@@ -296,9 +354,27 @@ def welcome_client(resp):
                     """)
 
 def goodbye_client(resp):
-        resp.message(
-                        f'¡Adios! Esperamos verte pronto 😃')
-    
+        resp.message(f'¡Adios! Esperamos verte pronto 😃')
+
+def client_flow(incoming_message,resp,phone_number):
+    if incoming_message == "menu" or "menu" in session:
+        if validate_phone_number(phone_number) or validate_reservation_number(incoming_message,resp) or "reservacion" in session:
+            if incoming_message == "menu" or session['menu']==3:
+                welcome_client(resp)
+                session['menu']=0
+            elif "menu" in session and session['menu']==1:
+                for message in conversations_client(phone_number, incoming_message):
+                    resp.message(message)
+            if "menu" not in session or session['menu']==0:
+                session['menu']=1
+        else:
+            session['menu']=0    
+            no_reservation_found(resp)
+
+def no_reservation_found(resp):
+    resp.message('Lo sentimos, no pudimos encontrar una reservación a tu nombre 😟')
+    resp.message('Por favor compartenos tu número de reservación.')
+
 def incoming_message() -> str:
     '''
     Receive incoming messages
@@ -311,39 +387,13 @@ def incoming_message() -> str:
     admin = get_admin_phones()
     if phone_number not in admin:
         # Client conversation
-        if validate_phone_number(phone_number) and incoming_message:
-            welcome_client(resp)
-            for message in conversations_client(phone_number, incoming_message):
-                resp.message(message)
-        elif 'reservacion' in session:
-            resp.message(
-                'Lo sentimos, no pudimos validar tu numero de telefono 😟')
-        else:
-            delete_session()
-            resp.message(
-                    'Lo sentimos, el número de reservación no existe favor de verificarlo.')
-            resp.message(
-                    'Gracias')
+        client_flow(incoming_message,resp,phone_number)
     elif phone_number in admin:
         if incoming_message == "salir" or incoming_message == "adios" or incoming_message == "gracias" :
-            delete_session()
+            delete_session_completly()
             goodbye_client(resp)
         elif incoming_message == "menu" or "menu" in session:
-            if validate_phone_number(phone_number) or validate_reservation_number(incoming_message):
-                if incoming_message == "menu":
-                    welcome_client(resp)
-                    session['menu']=0
-                if "menu" in session and session['menu']==1:
-                    for message in conversations_client(phone_number, incoming_message):
-                        resp.message(message)
-                if "menu" not in session:
-                    session['menu']=1
-            else:
-                session['menu']=0    
-                resp.message(
-                        'Lo sentimos, no pudimos encontrar una reservación a tu nombre 😟')
-                resp.message(
-                        'Por favor compartenos tu número de reservación.')
+            client_flow(incoming_message,resp,phone_number)
         else:
             if 'question_id' not in session and 'revision' not in session:
                 if 'revision' not in session:
@@ -351,9 +401,6 @@ def incoming_message() -> str:
             for message in conversations_homada(incoming_message):
                 resp.message(message)
     else:
-        resp.message(
-                'Lo sentimos, no pudimos encontrar una reservación a tu nombre 😟')
-        resp.message(
-                'Por favor compartenos tu número de reservación.')
+        no_reservation_found(resp)
         session['reservacion']=1
     return str(resp)
