@@ -261,7 +261,7 @@ def incoming_message() -> str:
     phone_number = request.values.get('From', None).replace('whatsapp:', '')
     resp = MessagingResponse()
     admin = get_admin(phone_number)
-    if phone_number != "+5215554060855":
+    if phone_number != "+5215571967146":
         # Client conversation
         if validate_phone_number(phone_number) and incoming_message:
             for message in conversations_client(phone_number, incoming_message):
