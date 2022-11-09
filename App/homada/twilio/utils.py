@@ -1,11 +1,6 @@
-from homada.models import Ubicacion, Client, Booking, Questions
+from homada.models import Ubicacion, Client, Booking, Questions, Admin
 from homada import db
-from homada.ubicacion.utils import get_ubicacion
-from homada.admin.utils import get_admin
-from homada.clientes.utils import get_client
-from homada.reservaciones.utils import get_booking
 from twilio.twiml.messaging_response import MessagingResponse
-from homada import client as twilio_client
 from flask import Flask, request, url_for, session, redirect
 import phonenumbers
 import datetime
@@ -29,11 +24,9 @@ def conversations_client(phone_number: str, incoming_message: str) -> list:
     '''
     messages = []
     client = Client.query.filter_by(phone=phone_number).first()
-    booking = get_booking(
-        Booking.query.filter_by(cliente_id=client.id).first())
-
-    ubicacion = get_ubicacion(
-        Ubicacion.query.filter_by(id=booking['Ubicacion_id']).first())
+    booking = Booking.query.filter_by(cliente_id=client.id).first()
+    ubicacion = Ubicacion.query.filter_by(
+        id=booking.ubicacion_id).first() if booking else None
 
     if incoming_message:
         match incoming_message:
@@ -42,8 +35,8 @@ def conversations_client(phone_number: str, incoming_message: str) -> list:
                     f'¡Hola {client.name}! Hola bienvenido a Homada, muchas gracias por tu preferencia']
                 if booking:
                     messages.extend(
-                        [f'{client.name}, para tu entradad el día {booking["Arrival"].strftime("%d/%m/%Y")}, queremos compartirte algunos datos. La hora de entrada es a las {booking["Arrival_time"].strftime("%H:%M")}. Sabemos que puedes necesitar conexión a internet, la red es {ubicacion["Ssid"]} y el password es {ubicacion["Clave"]}.',
-                         f'Para tu facilidad, el link de navegación es el siguiente: {ubicacion["Url"]}.',
+                        [f'{client.name}, para tu entradad el día {booking.arrival.strftime("%d/%m/%Y")}, queremos compartirte algunos datos. La hora de entrada es a las {booking.arrival_time.strftime("%H:%M")}. Sabemos que puedes necesitar conexión a internet, la red es {ubicacion["ssid"]} y el password es {ubicacion["clave"]}.',
+                         f'Para tu facilidad, el link de navegación es el siguiente: {ubicacion["url"]}.',
                          'En caso de necesitar apoyo por favor escribe en el chat la palabra "menú"'])
                 else:
                     messages.append(
@@ -54,7 +47,6 @@ def conversations_client(phone_number: str, incoming_message: str) -> list:
             case _:
                 messages.append(
                     f'No pude entender tu respuesta 😟 Inténtalo nuevamente 👇🏼 o escribe menu para desplegar las opciones con las que podemos apoyarte.')
-
     else:
         pass
 
@@ -65,7 +57,6 @@ def conversations_homada(incoming_message: str) -> list:
     '''
     Conversations with the homada user
     '''
-    response = MessagingResponse()
     messages = []
 
     if incoming_message:
@@ -245,12 +236,6 @@ def goodbye_twiml():
     return mensaje
 
 
-def sms_twiml(question):
-    response = MessagingResponse()
-    response.message(question.content)
-    return str(response)
-
-
 def incoming_message() -> str:
     '''
     Receive incoming messages
@@ -260,8 +245,8 @@ def incoming_message() -> str:
     # Get the phone number of the person sending the text message
     phone_number = request.values.get('From', None).replace('whatsapp:', '')
     resp = MessagingResponse()
-    admin = get_admin(phone_number)
-    if phone_number != "+5215554060855":
+    admin = Admin.query.filter_by(phone=phone_number).first()
+    if not admin:
         # Client conversation
         if validate_phone_number(phone_number) and incoming_message:
             for message in conversations_client(phone_number, incoming_message):

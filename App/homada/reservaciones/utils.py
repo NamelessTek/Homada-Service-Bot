@@ -5,4 +5,4 @@ def get_booking(booking: Booking) -> dict:
     '''
     Get booking data
     '''
-    return {key: value for key, value in Booking.__repr__(booking).items() if booking.status and value != []}
+    return {key: value for key, value in Booking.get_data(booking).items() if booking.status and value != []}
