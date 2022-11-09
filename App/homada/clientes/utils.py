@@ -1,8 +1,5 @@
-from typing import List
 from homada import db
-from homada.models import Client, Ubicacion
-from homada.ubicacion.utils import get_ubicacion
-import datetime
+from homada.models import Client
 
 
 def get_client(client: Client) -> dict:
@@ -12,12 +9,10 @@ def get_client(client: Client) -> dict:
     return Client.get_data(Client.query.filter_by(phone=client).first())
 
 
-def create_client(name: str, last_name: str, phone: str, email: str) -> dict:
+def create_client(name: str, phone: str, email: str) -> Client:
     '''
     Create client data in the database by receiving the name, last name, phone and email
     from whatsApp
     '''
-    client = Client(name, last_name, phone, email, True,
-                    datetime.now(), datetime.now())
-    db.session.add(client)
+    db.session.add(Client(name=name, phone=phone, email=email))
     db.session.commit()

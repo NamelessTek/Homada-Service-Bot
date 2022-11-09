@@ -1,4 +1,5 @@
 from homada.models import Ubicacion, Client, Booking, Questions, Admin
+from homada.reservaciones.utils import save_reservation
 from homada import db
 from twilio.twiml.messaging_response import MessagingResponse
 from flask import Flask, request, url_for, session, redirect
@@ -145,7 +146,7 @@ def conversations_homada(incoming_message: str) -> list:
     return messages
 
 
-def delete_session():
+def delete_session() -> None:
     if 'question_id' in session:
         del session['question_id']
 
@@ -162,42 +163,13 @@ def delete_session():
     del session['hr_salida_cliente']
 
 
-def save_reservation():
-
-    name = session['nombre_cliente']
-    phone = session['telefono_cliente']
-    email = session['email_cliente']
-
-    client = Client(name=name, phone=phone, email=email)
-    db.session.add(client)
-    db.session.commit()
-
-    client = Client.query.filter_by(email=email).first()
-    num_reservacion_cliente = session['num_reservacion_cliente']
-    dia_llegada_cliente = datetime.datetime.strptime(
-        session['dia_llegada_cliente'], '%d-%m-%Y')
-    dia_salida_cliente = datetime.datetime.strptime(
-        session['dia_salida_cliente'], '%d-%m-%Y')
-    ubicacion_cliente = session['ubicacion_cliente']
-
-    ubicacion = Ubicacion.query.filter_by(ubicacion=ubicacion_cliente).first()
-    arrival_time = ubicacion.arrival_time
-    departure_time = ubicacion.departure_time
-
-    booking = Booking(booking_number=num_reservacion_cliente, arrival=dia_llegada_cliente, departure=dia_salida_cliente, client=client, ubicacion=ubicacion, status=1,
-                      arrival_time=arrival_time, departure_time=departure_time)
-
-    db.session.add(booking)
-    db.session.commit()
-
-
-def redirect_to_first_question():
+def redirect_to_first_question() -> str:
     first_question = Questions.query.order_by(Questions.id).first()
     session['question_id'] = first_question.id
     return first_question.question
 
 
-def welcome_user(send_function):
+def welcome_user() -> str:
     welcome_text = """Para la creación de una reservación es necesario crear el cliente con los siguientes datos:
                     - Nombre 
                     - teléfono
@@ -212,7 +184,7 @@ def welcome_user(send_function):
     return welcome_text
 
 
-def review_user():
+def review_user() -> str:
     review_text = f'''Puedes confirmar los siguientes datos:
                     - Nombre {session['nombre_cliente']}
                     - teléfono {session['telefono_cliente']}
@@ -229,11 +201,9 @@ def review_user():
     return review_text
 
 
-def goodbye_twiml():
-    mensaje = "Ya quedo creada la reservación " + \
-        session['num_reservacion_cliente'] + " :)"
+def goodbye_twiml() -> str:
     delete_session()
-    return mensaje
+    return f"Ya quedo creada la reservación {session['num_reservacion_cliente']} :)"
 
 
 def incoming_message() -> str:
@@ -257,18 +227,9 @@ def incoming_message() -> str:
     else:
         if 'question_id' not in session and 'revision' not in session:
             if 'revision' not in session:
-                resp.message("""Hola, bienvenido a Homada
-                Para la creación de una reservación es necesario crear el cliente con los siguientes datos:
-                - Nombre
-                - teléfono
-                - Email
-                - número de reservación
-                - día de llegada
-                - hora de llegada
-                - día de partida
-                - hora de partida
-                - ubicación
-                """)
+                resp.message(welcome_user())
+            else:
+                resp.message(goodbye_twiml())
         for message in conversations_homada(incoming_message):
             resp.message(message)
 
