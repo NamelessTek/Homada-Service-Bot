@@ -29,6 +29,6 @@ def save_reservation() -> Booking:
 
     db.session.add(Booking(booking_number=session['num_reservacion_cliente'], arrival=datetime.datetime.strptime(
         session['dia_llegada_cliente'], '%d-%m-%Y'), departure=datetime.datetime.strptime(
-        session['dia_salida_cliente'], '%d-%m-%Y'), client=client, ubicacion=ubicacion, status=1,
+        session['dia_salida_cliente'], '%d-%m-%Y'), client=client, ubicacion=ubicacion,
         arrival_time=ubicacion.arrival_time, departure_time=ubicacion.departure_time))
     db.session.commit()

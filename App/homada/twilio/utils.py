@@ -1,8 +1,7 @@
 from homada.models import Ubicacion, Client, Booking, Questions, Admin
 from homada.reservaciones.utils import save_reservation
-from homada import db
 from twilio.twiml.messaging_response import MessagingResponse
-from flask import Flask, request, url_for, session, redirect
+from flask import session, request
 import phonenumbers
 import datetime
 
@@ -115,20 +114,18 @@ def conversations_homada(incoming_message: str) -> list:
             next_question = Questions.query.filter_by(
                 id=next_id_question).first()
             if next_question:
-                print("Pregunta siguiente " +
-                      next_question.question, flush=True)
+                print(
+                    f"Pregunta siguiente {next_question.question}", flush=True)
                 session['question_id'] = next_question.id
                 messages.append(next_question.question)
             else:
                 session['revision'] = 1
                 if 'question_id' in session:
                     del session['question_id']
-                review_message = review_user()
-                messages.append(review_message)
+                messages.append(review_user())
 
         elif 'revision' in session:
-            print("En revision", flush=True)
-            print(incoming_message, flush=True)
+            print(f"En revision\n{incoming_message}", flush=True)
             if incoming_message == "si":
                 save_reservation()
                 messages.append(goodbye_twiml())
@@ -202,8 +199,9 @@ def review_user() -> str:
 
 
 def goodbye_twiml() -> str:
+    goodbye = f"Ya quedo creada la reservación {session['num_reservacion_cliente']} :)"
     delete_session()
-    return f"Ya quedo creada la reservación {session['num_reservacion_cliente']} :)"
+    return goodbye
 
 
 def incoming_message() -> str:
