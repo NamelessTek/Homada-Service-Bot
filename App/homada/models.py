@@ -15,14 +15,17 @@ class Admin(db.Model):
     name: str = db.Column(db.String(50), nullable=False)
     phone: str = db.Column(db.String(50), nullable=False)
     email: str = db.Column(db.String(50), nullable=False)
-    status: bool = db.Column(db.Boolean, nullable=False,)
+    status: bool = db.Column(db.Boolean, nullable=False, default=True)
     creation_date: str = db.Column(
         db.DateTime, nullable=False, default=datetime.now)
     last_update: str = db.Column(
         db.TIMESTAMP, nullable=False, default=datetime.now, onupdate=datetime.now)
 
-    def __repr__(self) -> dict:
+    def get_data(self) -> dict:
         return {column.name: getattr(self, column.name) for column in self.__table__.columns}
+
+    def __str__(self) -> str:
+        return f'Admin({", ".join([f"{column.name}:{getattr(self, column.name)}" for column in self.__table__.columns])})'
 
 
 @dataclass
@@ -54,11 +57,11 @@ class Ubicacion(db.Model):
     bookings = db.relationship(
         'Booking', backref='ubicacion', lazy='dynamic')
 
-    def __repr__(self) -> dict:
-        return {"Ubiacion": self.ubicacion, "Direccion": self.direccion, "Url": self.url, "Ssid": self.ssid, "Clave": self.clave, "Modem": self.modem, "Mascotas": self.mascotas, "Arrival_time": self.arrival_time, "Departure_time": self.departure_time, "Status": self.status, "Option": self.option, "Creation_date": self.creation_date, "Last_update": self.last_update}
+    def get_data(self) -> dict:
+        return {column.name: getattr(self, column.name) for column in self.__table__.columns}
 
     def __str__(self) -> str:
-        return self.ubicacion
+        return f'Ubicacion({", ".join([f"{column.name}:{getattr(self, column.name)}" for column in self.__table__.columns])})'
 
 
 @dataclass
@@ -76,8 +79,11 @@ class Option(db.Model):
     last_update: str = db.Column(
         db.TIMESTAMP, nullable=False, default=datetime.now, onupdate=datetime.now)
 
-    def __repr__(self) -> dict:
-        return {column.capitalize(): getattr(self, column) for column in [column.name for column in self.__table__.columns]}
+    def get_data(self) -> dict:
+        return {column.name: getattr(self, column.name) for column in self.__table__.columns}
+
+    def __str__(self) -> str:
+        return f'Option({", ".join([f"{column.name}:{getattr(self, column.name)}" for column in self.__table__.columns])})'
 
 
 @dataclass
@@ -91,8 +97,11 @@ class Questions(db.Model):
     question: str = db.Column(db.String(250), nullable=False)
     type_question: str = db.Column(db.String(50), nullable=False)
 
-    def __repr__(self) -> dict:
-        return {column.capitalize(): getattr(self, column) for column in [column.name for column in self.__table__.columns]}
+    def get_data(self) -> dict:
+        return {column.name: getattr(self, column.name) for column in self.__table__.columns}
+
+    def __str__(self) -> str:
+        return f'Questions({", ".join([f"{column.name}:{getattr(self, column.name)}" for column in self.__table__.columns])})'
 
 
 @dataclass
@@ -106,7 +115,7 @@ class Client(db.Model):
                         autoincrement=True, nullable=False)
     name: str = db.Column(db.String(460), nullable=False)
     phone: str = db.Column(db.String(280), nullable=False)
-    status: int = db.Column(db.Integer, nullable=False, default=1)
+    status: bool = db.Column(db.Integer, nullable=False, default=True)
     email: str = db.Column(db.String(280), nullable=True)
     creation_date: str = db.Column(
         db.DateTime, nullable=False, default=datetime.now)
@@ -117,11 +126,11 @@ class Client(db.Model):
     bookings = db.relationship(
         'Booking', backref='client', lazy='dynamic')
 
-    def __repr__(self) -> dict:
-        return {column.capitalize(): getattr(self, column) for column in [column.name for column in self.__table__.columns]}
+    def get_data(self) -> dict:
+        return {column.name: getattr(self, column.name) for column in self.__table__.columns}
 
     def __str__(self) -> str:
-        return self.name
+        return f'Client({", ".join([f"{column.name}:{getattr(self, column.name)}" for column in self.__table__.columns])})'
 
 
 @dataclass
@@ -146,11 +155,10 @@ class Booking(db.Model):
         db.DateTime, nullable=False, default=datetime.now)
     last_update: str = db.Column(
         db.TIMESTAMP, nullable=False, default=datetime.now, onupdate=datetime.now)
-    status: int = db.Column(db.Integer, nullable=False)
+    status: bool = db.Column(db.Integer, nullable=False, default=True)
 
-    def __repr__(self) -> dict:
-        # convert to dict and capitalize first letter of each key and captilize ID
-        return {column.capitalize(): getattr(self, column) for column in [column.name for column in self.__table__.columns]}
+    def get_data(self) -> dict:
+        return {column.name: getattr(self, column.name) for column in self.__table__.columns}
 
     def __str__(self) -> str:
-        return 'Booking %r' % str(self.booking_number)
+        return f'Booking({", ".join([f"{column.name}:{getattr(self, column.name)}" for column in self.__table__.columns])})'

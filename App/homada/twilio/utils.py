@@ -1,14 +1,10 @@
-from homada.models import Ubicacion, Client, Booking, Questions
-from homada import db
-from homada.ubicacion.utils import get_ubicacion
-from homada.admin.utils import *
-from homada.clientes.utils import get_client
-from homada.reservaciones.utils import get_booking
+from homada.config import Config
+from twilio.rest import Client as TwilioClient
+from homada.models import Ubicacion, Client, Booking, Questions, Admin
+from homada.reservaciones.utils import save_reservation, delete_reservation
 from twilio.twiml.messaging_response import MessagingResponse
-from homada import client as twilio_client
-from flask import Flask, request, url_for, session, redirect
+from flask import session, request
 import phonenumbers
-import datetime
 
 
 def validate_phone_number(phone_number: str) -> bool:
@@ -23,7 +19,7 @@ def validate_phone_number(phone_number: str) -> bool:
         return False
 
 
-def validate_reservation_number(reservation_number: str, resp) -> bool:
+def validate_reservation_number(reservation_number: str) -> bool:
     '''
     Validate reservation number
     '''
@@ -43,40 +39,44 @@ def conversations_client(phone_number: str, incoming_message: str) -> list:
     '''
     messages = []
     client = Client.query.filter_by(phone=phone_number).first()
+    booking = Booking.query.filter_by(cliente_id=client.id).first()
+
+    ubicacion = Ubicacion.query.filter_by(
+        id=booking.ubicacion_id).first() if booking else None
     if not client:
-        booking = get_booking(
-            Booking.query.filter_by(booking_number=session['reservacion']).first())
+        booking = Booking.query.filter_by(
+            booking_number=session['reservacion']).first()
     else:
-        booking = get_booking(
-            Booking.query.filter_by(cliente_id=client.id).first())
-    ubicacion = get_ubicacion(
-        Ubicacion.query.filter_by(id=booking['Ubicacion_id']).first())
+        booking = Booking.query.filter_by(cliente_id=client.id).first()
+        ubicacion = Ubicacion.query.filter_by(
+            id=booking.ubicacion_id).first() if booking else None
     if incoming_message:
         match incoming_message:
             case "1":
-                for message in flow_ubicacion(messages, client, booking, ubicacion):
+                for message in flow_ubicacion(client, booking, ubicacion):
                     messages.append(message)
             case "3":
-                for message in flow_red(messages, client, booking, ubicacion):
+                for message in flow_network(client, booking, ubicacion):
                     messages.append(message)
             case _:
                 messages.append(
                     f'No pude entender tu respuesta 😟 Inténtalo nuevamente 👇🏼 o escribe menu para desplegar las opciones con las que podemos apoyarte.')
-
     else:
         pass
 
     return messages
 
 
-def flow_red(messages, client, booking, ubicacion):
-
+def flow_network(client: int, booking: int, ubicacion: int) -> list:
+    '''
+    Conversation flow sending the network data to the user
+    '''
     if client:
         messages = [
             f'¡Hola {client.name}! Hola bienvenido a Homada, muchas gracias por tu preferencia']
         if booking:
             messages.extend(
-                [f'Sabemos que puedes necesitar conexión a internet, la red es {ubicacion["Ssid"]} y el password es {ubicacion["Clave"]}.',
+                [f'Sabemos que puedes necesitar conexión a internet, la red es {ubicacion.ssid} y el password es {ubicacion.clave}.',
                  'En caso de necesitar apoyo por favor escribe en el chat la palabra "menú"'])
 
             if 'menu' in session:
@@ -89,7 +89,7 @@ def flow_red(messages, client, booking, ubicacion):
             f'¡Hola! Hola bienvenido a Homada, muchas gracias por tu preferencia']
         if booking:
             messages.extend(
-                [f'Sabemos que puedes necesitar conexión a internet, la red es {ubicacion["Ssid"]} y el password es {ubicacion["Clave"]}.',
+                [f'Sabemos que puedes necesitar conexión a internet, la red es {ubicacion.ssid} y el password es {ubicacion.clave}.',
                  'En caso de necesitar apoyo por favor escribe en el chat la palabra "menú"'])
 
             if 'menu' in session:
@@ -100,13 +100,16 @@ def flow_red(messages, client, booking, ubicacion):
     return messages
 
 
-def flow_ubicacion(messages, client, booking, ubicacion):
+def flow_ubicacion(client: int, booking: int, ubicacion: int) -> list:
+    ''' 
+    Conversation flow sending the location data to the user
+    '''
     if client:
         messages = [f'¡Hola {client.name}!, muchas gracias por tu preferencia']
         if booking:
             messages.extend(
-                [f'{client.name}, para tu entrada el día {booking["Arrival"].strftime("%d/%m/%Y")}, queremos compartirte algunos datos. ',
-                 f'Para tu facilidad, el link de navegación es el siguiente: {ubicacion["Url"]}.',
+                [f'{client.name}, para tu entrada el día {booking.arrival.strftime("%d/%m/%Y")}, queremos compartirte algunos datos. ',
+                 f'Para tu facilidad, el link de navegación es el siguiente: {ubicacion.url}.',
                  'En caso de necesitar apoyo por favor escribe en el chat la palabra "menú"'])
             if 'menu' in session:
                 delete_session()
@@ -117,8 +120,8 @@ def flow_ubicacion(messages, client, booking, ubicacion):
         messages = [f'¡Hola!, muchas gracias por tu preferencia']
         if booking:
             messages.extend(
-                [f'Para tu entrada el día {booking["Arrival"].strftime("%d/%m/%Y")}, queremos compartirte algunos datos. ',
-                 f'Para tu facilidad, el link de navegación es el siguiente: {ubicacion["Url"]}.',
+                [f'Para tu entrada el día {booking.arrival.strftime("%d/%m/%Y")}, queremos compartirte algunos datos. ',
+                 f'Para tu facilidad, el link de navegación es el siguiente: {ubicacion.url}.',
                  'En caso de necesitar apoyo por favor escribe en el chat la palabra "menú"'])
             if 'menu' in session:
                 delete_session()
@@ -132,7 +135,6 @@ def conversations_homada(incoming_message: str) -> list:
     '''
     Conversations with the homada user
     '''
-    response = MessagingResponse()
     messages = []
 
     if incoming_message:
@@ -144,44 +146,41 @@ def conversations_homada(incoming_message: str) -> list:
             match question_id:
                 case 1:
                     session['nombre_cliente'] = incoming_message
-                    print("Nombre del cliente " +
-                          str(session['nombre_cliente']), flush=True)
+                    print(
+                        f"Nombre del cliente {session['nombre_cliente']}", flush=True)
 
                 case 2:
-                    if incoming_message != Client.query.filter_by(phone=incoming_message).first():
-                        print(Client.query.filter_by(
-                            phone=incoming_message).first(), flush=True)
-                        session['telefono_cliente'] = incoming_message
-                        print("Telefono del cliente " +
-                              str(session['telefono_cliente']), flush=True)
-                    else:
-                        messages.append(
-                            f'El número de teléfono ya existe, por favor ingresa otro')
-                        question_id = 2
+                    session['telefono_cliente'] = incoming_message
+                    print(
+                        f"Nombre del cliente {session['nombre_cliente']}", flush=True)
                 case 3:
                     session['email_cliente'] = incoming_message
-                    print("Email del cliente " +
-                          str(session['email_cliente']), flush=True)
+                    print(
+                        f"Email del cliente {session['email_cliente']}", flush=True)
                 case 4:
                     session['num_reservacion_cliente'] = incoming_message
-                    print("Num Reservacion del cliente " +
-                          str(session['num_reservacion_cliente']), flush=True)
+                    print(
+                        f"Numero de reservacion del cliente {session['num_reservacion_cliente']}", flush=True)
                 case 5:
                     session['dia_llegada_cliente'] = incoming_message
-                    print("Dia Llegada del cliente " +
-                          str(session['dia_llegada_cliente']), flush=True)
+                    print(
+                        f"Dia de llegada del cliente {session['dia_llegada_cliente']}", flush=True)
                 case 6:
                     session['dia_salida_cliente'] = incoming_message
-                    print("Dia Salida del cliente " +
-                          str(session['dia_salida_cliente']), flush=True)
+                    print(
+                        f"Dia de salida del cliente {session['dia_salida_cliente']}", flush=True)
                 case 7:
                     session['ubicacion_cliente'] = incoming_message
+                    print(
+                        f"Ubicacion del cliente {session['ubicacion_cliente']}", flush=True)
                     ubicacion_query = Ubicacion.query.filter_by(
                         ubicacion=session['ubicacion_cliente']).first()
                     session['hr_llegada_cliente'] = ubicacion_query.arrival_time
                     session['hr_salida_cliente'] = ubicacion_query.departure_time
-                    print("Ubicacion del cliente " +
-                          str(session['ubicacion_cliente']), flush=True)
+                    print(
+                        f"Hora de llegada del cliente {session['hr_llegada_cliente']}", flush=True)
+                    print(
+                        f"Ubiacion del cliente {session['ubicacion_cliente']}", flush=True)
                 case _:
                     pass
 
@@ -190,26 +189,27 @@ def conversations_homada(incoming_message: str) -> list:
             next_question = Questions.query.filter_by(
                 id=next_id_question, type_question="Reserva").first()
             if next_question:
-                print("Pregunta siguiente " +
-                      next_question.question, flush=True)
+                print(
+                    f"Pregunta siguiente {next_question.question}", flush=True)
                 session['question_id'] = next_question.id
                 messages.append(next_question.question)
             else:
                 session['revision'] = 1
                 if 'question_id' in session:
                     del session['question_id']
-                review_message = review_user()
-                messages.append(review_message)
+                messages.append(review_user())
 
         elif 'revision' in session:
-            print("En revision", flush=True)
-            print(incoming_message, flush=True)
+            print(f"En revision\n{incoming_message}", flush=True)
             if incoming_message == "si":
                 save_reservation()
+                notify_client(session['telefono_cliente'])
                 messages.append(goodbye_twiml())
             else:
-                # Mensaje de que se repetira el ciclo?
-                messages.append(goodbye_twiml())
+                # restart the conversation
+                messages.append(
+                    "De acuerdo, vamos a empezar de nuevo o si prefieres puedes escribir la palabra 'salir' para terminar la conversación")
+                messages.append(redirect_to_first_question())
         else:
             print("Primera pregunta", flush=True)
             pregunta = redirect_to_first_question()
@@ -221,170 +221,107 @@ def conversations_homada(incoming_message: str) -> list:
     return messages
 
 
-def delete_session_completly():
-    if 'question_id' in session:
-        del session['question_id']
-    if 'revision' in session:
-        del session['revision']
-    if 'nombre_cliente' in session:
-        del session['nombre_cliente']
-    if 'telefono_cliente' in session:
-        del session['telefono_cliente']
-    if 'email_cliente' in session:
-        del session['email_cliente']
-    if 'num_reservacion_cliente' in session:
-        del session['num_reservacion_cliente']
-    if 'dia_llegada_cliente' in session:
-        del session['dia_llegada_cliente']
-    if 'dia_salida_cliente' in session:
-        del session['dia_salida_cliente']
-    if 'ubicacion_cliente' in session:
-        del session['ubicacion_cliente']
-    if 'hr_llegada_cliente' in session:
-        del session['hr_llegada_cliente']
-    if 'hr_salida_cliente' in session:
-        del session['hr_salida_cliente']
-    if 'menu' in session:
-        del session['menu']
-    if 'reservacion' in session:
-        del session['reservacion']
-    if 'booking_no' in session:
-        del session['booking_no']
-    if 'review_cancel' in session:
-        del session['review_cancel']
-    if 'cancelar' in session:
-        del session['cancelar']
+def notify_client(phone_number: str) -> None:
+    '''
+    Send a notification to the client telling him about the reservation
+    '''
+    client = Client.query.filter_by(phone=phone_number).first()
+    if client:
+        body = f"¡Hola {client.name}!, muchas gracias por tu preferencia. Para tu entrada el día {session['dia_llegada_cliente']}, queremos compartirte algunos datos. Para tu facilidad, el link de navegación es el siguiente: {session['ubicacion_cliente']}. En caso de necesitar apoyo por favor escribe en el chat la palabra 'menú'"
+        client = TwilioClient(
+            Config.TWILIO_ACCOUNT_SID, Config.TWILIO_AUTH_TOKEN)
+        message = client.messages.create(
+            to=f'whatsapp:{phone_number}',
+            from_=Config.TWILIO_PHONE_NUMBER,
+            body=body
+        )
+        print(message.sid, flush=True)
+
+
+def delete_session_completly() -> None:
+    '''
+    Delete the keys in the session dictionary
+    '''
+    for key in list(session.keys()):
+        print(key, flush=True)
+        del session[key]
 
 
 def delete_session():
-    if 'question_id' in session:
-        del session['question_id']
-    if 'revision' in session:
-        del session['revision']
-    if 'nombre_cliente' in session:
-        del session['nombre_cliente']
-    if 'telefono_cliente' in session:
-        del session['telefono_cliente']
-    if 'email_cliente' in session:
-        del session['email_cliente']
-    if 'num_reservacion_cliente' in session:
-        del session['num_reservacion_cliente']
-    if 'dia_llegada_cliente' in session:
-        del session['dia_llegada_cliente']
-    if 'dia_salida_cliente' in session:
-        del session['dia_salida_cliente']
-    if 'ubicacion_cliente' in session:
-        del session['ubicacion_cliente']
-    if 'hr_llegada_cliente' in session:
-        del session['hr_llegada_cliente']
-    if 'hr_salida_cliente' in session:
-        del session['hr_salida_cliente']
+    '''
+    Delete the keys in the session dictionary
+    '''
+    for key in ['question_id', 'revision', 'nombre_cliente', 'telefono_cliente', 'email_cliente', 'num_reservacion_cliente', 'dia_llegada_cliente', 'dia_salida_cliente', 'ubicacion_cliente', 'hr_llegada_cliente', 'hr_salida_cliente']:
+        if key in session:
+            del session[key]
 
 
-def save_reservation():
-
-    name = session['nombre_cliente']
-    phone = session['telefono_cliente']
-    email = session['email_cliente']
-
-    client = Client(name=name, phone=phone, email=email)
-    db.session.add(client)
-    db.session.commit()
-
-    client = Client.query.filter_by(email=email).first()
-    num_reservacion_cliente = session['num_reservacion_cliente']
-    dia_llegada_cliente = datetime.datetime.strptime(
-        session['dia_llegada_cliente'], '%d-%m-%Y')
-    dia_salida_cliente = datetime.datetime.strptime(
-        session['dia_salida_cliente'], '%d-%m-%Y')
-    ubicacion_cliente = session['ubicacion_cliente']
-
-    ubicacion = Ubicacion.query.filter_by(ubicacion=ubicacion_cliente).first()
-    arrival_time = ubicacion.arrival_time
-    departure_time = ubicacion.departure_time
-
-    booking = Booking(booking_number=num_reservacion_cliente, arrival=dia_llegada_cliente, departure=dia_salida_cliente, client=client, ubicacion=ubicacion, status=1,
-                      arrival_time=arrival_time, departure_time=departure_time)
-
-    db.session.add(booking)
-    db.session.commit()
-
-
-def redirect_to_first_question():
+def redirect_to_first_question() -> str:
     first_question = Questions.query.order_by(Questions.id).first()
     session['question_id'] = first_question.id
     return first_question.question
 
 
-def welcome_user(send_function):
-    welcome_text = """Para la creación de una reservación es necesario crear el cliente con los siguientes datos:
-                    - Nombre
-                    - teléfono
-                    - Email
-                    - número de reservación
-                    - día de llegada
-                    - hora de llegada
-                    - día de partida
-                    - hora de partida
-                    - ubicación
-                    """
-    return welcome_text
+def review_user() -> str:
+    '''
+    Sends the information with session keys info to the admin to review
+    '''
+    review_text = f'''
+- Nombre: {session['nombre_cliente']}
+- Telefono: {session['telefono_cliente']}
+- Email: {session['email_cliente']}
+- Numero de reservacion: {session['num_reservacion_cliente']}
+- Día de llegada: {session['dia_llegada_cliente']}
+- Día de salida: {session['dia_salida_cliente']}
+- Ubicacion: {session['ubicacion_cliente']}
+- Hora de llegada: {session['hr_llegada_cliente']}
+- Hora de salida: {session['hr_salida_cliente']}
 
-
-def review_user():
-    review_text = f'''Puedes confirmar los siguientes datos:
-                    - Nombre {session['nombre_cliente']}
-                    - teléfono {session['telefono_cliente']}
-                    - Email {session['email_cliente']}
-                    - número de reservación {session['num_reservacion_cliente']}
-                    - día de llegada {session['dia_llegada_cliente']}
-                    - hora de llegada {session['hr_llegada_cliente']}
-                    - día de partida {session['dia_salida_cliente']}
-                    - hora de partida {session['hr_salida_cliente']}
-                    - ubicación {session['ubicacion_cliente']}
-
-                    Contesta con un si o un no
-                    '''
+¿Los datos son correctos?
+Contesta con "si" o "no"
+'''
     return review_text
 
 
-def goodbye_twiml():
-    mensaje = "Ya quedo creada la reservación " + \
-        session['num_reservacion_cliente'] + " :)"
+def goodbye_twiml() -> str:
+    goodbye = f"Ya quedo creada la reservación {session['num_reservacion_cliente']} :)"
     delete_session()
-    return mensaje
+    return goodbye
 
 
-def welcome_homada(resp):
-    resp.message("""Hola, bienvenido a Homada
-                    Para la creación de una reservación es necesario crear el cliente con los siguientes datos:
-                    - Nombre
-                    - teléfono
-                    - Email
-                    - número de reservación
-                    - día de llegada
-                    - hora de llegada
-                    - día de partida
-                    - hora de partida
-                    - ubicación
-                    """)
+def welcome_homada(resp) -> str:
+    ''' 
+    Sends a welcome message to the admin and a list of fields to fill in order to create a reservation and a client
+    '''
+    resp.message("Hola, bienvenido a Homada 👍")
+    resp.message(
+        "Para la creación de una reservación es necesario crear el cliente con los siguientes datos:")
+    resp.message(
+        " - Nombre\n- Teléfono\n- Email\n- Número de reservación\n- Día de llegada\n- Hora de llegada\n- Día de partida\n- Hora de partida\n- ubicación")
 
 
-def welcome_client(resp):
-    resp.message("""¿Qué deseas hacer? 💫
-                    1. Obtener Ubicación 📍
-                    2. Facturación 💳
-                    3. Clave WIFI 🔐
-                    """)
+def welcome_client(resp) -> None:
+    ''' 
+    Sends the client the menu of options
+    '''
+    resp.message(
+        "¿Qué deseas hacer? 💫\n1. Obtener Ubicación 📍\n2. Facturación 💳\n3. Clave WIFI 🔐")
 
 
-def goodbye_client(resp):
-    resp.message(f'¡Adios! Esperamos verte pronto 😃')
+def goodbye_client(resp) -> None:
+    '''
+    Sends a goodbye message to the client
+    '''
+    resp.message(f'¡Adiós! Esperamos verte pronto 😃')
 
 
-def client_flow(incoming_message, resp, phone_number):
+def client_flow(incoming_message, resp, phone_number) -> None:
+    '''
+    Creates the flow for the client to follow if the client is already in the database, 
+    has a reservation the incoming message is a menu option
+    '''
     if incoming_message == "menu" or "menu" in session:
-        if validate_phone_number(phone_number) or validate_reservation_number(incoming_message, resp) or "reservacion" in session:
+        if validate_phone_number(phone_number) or validate_reservation_number(incoming_message) or "reservacion" in session:
             if incoming_message == "menu" or session['menu'] == 3:
                 welcome_client(resp)
                 session['menu'] = 0
@@ -398,7 +335,8 @@ def client_flow(incoming_message, resp, phone_number):
             no_reservation_found(resp)
 
 
-def no_reservation_found(resp):
+def no_reservation_found(resp) -> str:
+    '''No reservation found'''
     resp.message(
         'Lo sentimos, no pudimos encontrar una reservación a tu nombre 😟')
     resp.message('Por favor compartenos tu número de reservación.')
@@ -413,11 +351,11 @@ def incoming_message() -> str:
     # Get the phone number of the person sending the text message
     phone_number = request.values.get('From', None).replace('whatsapp:', '')
     resp = MessagingResponse()
-    admin = get_admin_phones()
-    if phone_number not in admin:
+    admin = Admin.query.filter_by(phone=phone_number).first()
+    if not admin:
         # Client conversation
         client_flow(incoming_message, resp, phone_number)
-    elif phone_number in admin:
+    elif phone_number == admin.phone:
         if incoming_message == "salir" or incoming_message == "adios" or incoming_message == "gracias":
             delete_session_completly()
             goodbye_client(resp)
@@ -426,7 +364,6 @@ def incoming_message() -> str:
         elif incoming_message == 'cancelar reserva' or incoming_message == 'cancelar' or 'cancelar' in session:
             for message in cancel_reservation(incoming_message):
                 resp.message(message)
-
         else:
             if 'question_id' not in session and 'revision' not in session:
                 if 'revision' not in session:
@@ -444,7 +381,7 @@ def cancel_reservation(incoming_message: str) -> list:
     '''
     Cancel reservation
     '''
-    session['cancelar'] = 1
+    session['cancelar'] = True
     messages = []
     if incoming_message:
         if 'question_id' in session:
@@ -453,14 +390,13 @@ def cancel_reservation(incoming_message: str) -> list:
                     session['booking_no'] = incoming_message
                     print(
                         f'El número de reservación es: {session["booking_no"]}')
-
                 case _:
                     pass
             session['review_cancel'] = True
             if 'question_id' in session:
                 del session['question_id']
             messages.append(
-                '¿Estás seguro que deseas cancelar tu reservación?')
+                f'¿Estás seguro que deseas cancelar la reservación {session["booking_no"]}?')
 
         elif 'review_cancel' in session:
             if incoming_message == 'si':
@@ -480,13 +416,3 @@ def cancel_reservation(incoming_message: str) -> list:
         pass
 
     return messages
-
-
-def delete_reservation(booking_no: str):
-    '''
-    Delete reservation from database
-    '''
-    reservation = Booking.query.filter_by(
-        booking_number=booking_no).first()
-    reservation.status = False
-    db.session.commit()
