@@ -1,19 +1,13 @@
-INSERT INTO
+DROP TABLE IF EXISTS `Client`;
+
+CREATE TABLE
     `Client` (
-        `ID`,
-        `Name`,
-        `Phone`,
-        `Email`,
-        `Status`,
-        `Creation_date`,
-        `Last_update`
-    )
-VALUES (
-        1,
-        'Luis Cedillo Maldonado',
-        '+5215571967146',
-        'luisitocedillo@gmail.com',
-        1,
-        '2022-10-26',
-        '2022-10-26 01:35:52'
-    );
+        `ID` int(11) NOT NULL AUTO_INCREMENT,
+        `Name` text NOT NULL,
+        `Phone` text NOT NULL,
+        `Email` text NOT NULL,
+        `Status` tinyint(4) NOT NULL,
+        `Creation_date` date NOT NULL,
+        `Last_update` timestamp NOT NULL,
+        PRIMARY KEY (`ID`)
+    ) ENGINE = InnoDB DEFAULT CHARSET = utf8;

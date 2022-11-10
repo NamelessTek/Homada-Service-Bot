@@ -1,3 +1,26 @@
+SET NAMES utf8;
+
+DROP TABLE IF EXISTS `Ubicacion`;
+
+CREATE TABLE
+    `Ubicacion` (
+        `ID` int(11) NOT NULL AUTO_INCREMENT,
+        `Ubicacion` text NOT NULL,
+        `URL` text NOT NULL,
+        `Direccion` text NOT NULL,
+        `SSID` text,
+        `Modem` text,
+        `Clave` text,
+        `Mascotas` int(1) DEFAULT NULL,
+        `Arrival_time` time NOT NULL,
+        `Departure_time` time NOT NULL,
+        `Status` tinyint(4) DEFAULT NULL,
+        `Option` int(1) DEFAULT NULL,
+        `Creation_date` datetime NOT NULL,
+        `Last_update` timestamp NOT NULL,
+        PRIMARY KEY (`ID`)
+    ) ENGINE = InnoDB DEFAULT CHARSET = utf8;
+
 INSERT INTO
     `Ubicacion` (
         `ID`,

@@ -5,6 +5,8 @@ from homada.reservaciones.utils import save_reservation, delete_reservation
 from twilio.twiml.messaging_response import MessagingResponse
 from flask import session, request
 import phonenumbers
+import datetime
+import re
 
 
 def validate_phone_number(phone_number: str) -> bool:
@@ -19,6 +21,16 @@ def validate_phone_number(phone_number: str) -> bool:
         return False
 
 
+def validate_email(email: str) -> bool:
+    '''
+    Validate email
+    '''
+    try:
+        return re.match(r"[^@]+@[^@]+\.[^@]+", email)
+    except Exception:
+        return False
+
+
 def validate_reservation_number(reservation_number: str) -> bool:
     '''
     Validate reservation number
@@ -29,6 +41,17 @@ def validate_reservation_number(reservation_number: str) -> bool:
         session['reservacion'] = reservation.booking_number
         session['menu'] = 3
         return True
+    except Exception:
+        return False
+
+
+def validate_date(date: str) -> bool:
+    '''
+    Validate that the date is in the correct format dd-mm-yyyy and that it is not a past date
+    '''
+    try:
+        date = datetime.datetime.strptime(date, '%d-%m-%Y')
+        return date >= datetime.datetime.now()
     except Exception:
         return False
 
@@ -154,21 +177,45 @@ def conversations_homada(incoming_message: str) -> list:
                     print(
                         f"Nombre del cliente {session['nombre_cliente']}", flush=True)
                 case 3:
-                    session['email_cliente'] = incoming_message
-                    print(
-                        f"Email del cliente {session['email_cliente']}", flush=True)
+                    if validate_email(incoming_message):
+                        session['email_cliente'] = incoming_message
+                        print(
+                            f"Email del cliente {session['email_cliente']}", flush=True)
+                    else:
+                        messages.append(
+                            f'El correo electrónico no es válido, por favor intenta nuevamente')
+                        messages.append(
+                            Questions.query.get(question_id).question)
+                        return messages
+
                 case 4:
                     session['num_reservacion_cliente'] = incoming_message
                     print(
                         f"Numero de reservacion del cliente {session['num_reservacion_cliente']}", flush=True)
                 case 5:
-                    session['dia_llegada_cliente'] = incoming_message
-                    print(
-                        f"Dia de llegada del cliente {session['dia_llegada_cliente']}", flush=True)
+                    # validate that the date is in the correct format and that it is a date that has not yet passed
+                    if validate_date(incoming_message):
+                        session['dia_llegada_cliente'] = incoming_message
+                        print(
+                            f"Dia de llegada del cliente {session['dia_llegada_cliente']}", flush=True)
+                    else:
+                        messages.append(
+                            f'La fecha no es válida, por favor intenta nuevamente')
+                        messages.append(Questions.query.get(
+                            question_id).question)
+                        return messages
                 case 6:
-                    session['dia_salida_cliente'] = incoming_message
-                    print(
-                        f"Dia de salida del cliente {session['dia_salida_cliente']}", flush=True)
+                    # validate that the date is in the corredt format and that it is a date that has not yet passed and that it is greater than the arrival date
+                    if validate_date(incoming_message):
+                        session['dia_salida_cliente'] = incoming_message
+                        print(
+                            f"Dia de salida del cliente {session['dia_salida_cliente']}", flush=True)
+                    else:
+                        messages.append(
+                            f'La fecha no es válida, por favor intenta nuevamente')
+                        messages.append(Questions.query.get(
+                            question_id).question)
+                        return messages
                 case 7:
                     session['ubicacion_cliente'] = incoming_message
                     print(
@@ -262,20 +309,39 @@ def redirect_to_first_question() -> str:
     return first_question.question
 
 
+def font(style: str, text: str) -> str:
+    '''
+    Return the text with the style
+    '''
+    match style:
+        case "bold":
+            return f"*{text}*"
+        case "italic":
+            return f"_{text}_"
+        case "code":
+            return f"`{text}`"
+        case "pre":
+            return f"```{text}```"
+        case _:
+            raise ValueError(f"Unknown style: {style}")
+
+
 def review_user() -> str:
     '''
     Sends the information with session keys info to the admin to review
     '''
+    def bold(x: str) -> str: return f"*{x}*"
+
     review_text = f'''
-- Nombre: {session['nombre_cliente']}
-- Telefono: {session['telefono_cliente']}
-- Email: {session['email_cliente']}
-- Numero de reservacion: {session['num_reservacion_cliente']}
-- Día de llegada: {session['dia_llegada_cliente']}
-- Día de salida: {session['dia_salida_cliente']}
-- Ubicacion: {session['ubicacion_cliente']}
-- Hora de llegada: {session['hr_llegada_cliente']}
-- Hora de salida: {session['hr_salida_cliente']}
+{bold("-Nombre:")} {session['nombre_cliente']}
+{bold("-Telefono:")} {session['telefono_cliente']}
+{bold("-Email:")} {session['email_cliente']}
+{bold("-No. Reservación:")} {session['num_reservacion_cliente']}
+{bold("-Día de llegada:")} {session['dia_llegada_cliente']}
+{bold("-Día de salida:")} {session['dia_salida_cliente']}
+{bold("-Día de salida:")} {(session['ubicacion_cliente']).title()}
+{bold("-Hora de llegada:")} {session['hr_llegada_cliente']}
+{bold("-Hora de salida:")} {session['hr_salida_cliente']}
 
 ¿Los datos son correctos?
 Contesta con "si" o "no"
