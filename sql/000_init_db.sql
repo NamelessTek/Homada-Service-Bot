@@ -21,83 +21,11 @@ set character_set_results = 'utf8';
 set character_set_server = 'utf8';
 
 CREATE TABLE
-    `Admin` (
-        `ID` int(11) NOT NULL AUTO_INCREMENT,
-        `Name` text NOT NULL,
-        `Phone` text NOT NULL,
-        `Email` text NOT NULL,
-        `Creation_date` datetime NOT NULL,
-        `Last_update` timestamp NOT NULL,
-        `Status` int(11) NOT NULL,
-        PRIMARY KEY (`ID`)
-    ) ENGINE = InnoDB DEFAULT CHARSET = utf8;
-
-DROP TABLE IF EXISTS `Booking`;
-
-CREATE TABLE
-    `Booking` (
-        `ID` int(11) NOT NULL AUTO_INCREMENT,
-        `Booking_number` text NOT NULL,
-        `Arrival` date NOT NULL,
-        `Departure` date NOT NULL,
-        `Ubicacion_id` int(11) NOT NULL,
-        `Cliente_id` int(11) NOT NULL,
-        `Arrival_time` time NOT NULL,
-        `Departure_time` time NOT NULL,
-        `Creation_date` datetime NOT NULL,
-        `Last_update` timestamp NOT NULL,
-        `Status` int(11) NOT NULL,
-        PRIMARY KEY (`ID`),
-        KEY `Ubicacion` (`Ubicacion_id`),
-        KEY `Cliente` (`Cliente_id`),
-        CONSTRAINT `Booking_ibfk_1` FOREIGN KEY (`Ubicacion_id`) REFERENCES `Ubicacion` (`ID`),
-        CONSTRAINT `Booking_ibfk_2` FOREIGN KEY (`Cliente_id`) REFERENCES `Client` (`ID`)
-    ) ENGINE = InnoDB DEFAULT CHARSET = utf8;
-
-DROP TABLE IF EXISTS `Client`;
-
-CREATE TABLE
-    `Client` (
-        `ID` int(11) NOT NULL AUTO_INCREMENT,
-        `Name` text NOT NULL,
-        `Phone` text NOT NULL,
-        `Email` text NOT NULL,
-        `Status` int(11) NOT NULL,
-        `Creation_date` date NOT NULL,
-        `Last_update` timestamp NOT NULL,
-        PRIMARY KEY (`ID`)
-    ) ENGINE = InnoDB DEFAULT CHARSET = utf8;
-
-DROP TABLE IF EXISTS `Option`;
-
-CREATE TABLE
     `Option` (
         `ID` int(11) NOT NULL AUTO_INCREMENT,
         `Option` int(11) NOT NULL,
         `Value` text NOT NULL,
         `Creation_date` date NOT NULL,
-        `Last_update` timestamp NOT NULL,
-        PRIMARY KEY (`ID`)
-    ) ENGINE = InnoDB DEFAULT CHARSET = utf8;
-
-DROP TABLE IF EXISTS `Ubicacion`;
-
-CREATE TABLE
-    `Ubicacion` (
-        `ID` int(11) NOT NULL AUTO_INCREMENT,
-        `Ubicacion` text NOT NULL,
-        `URL` text NOT NULL,
-        `Direccion` text NOT NULL,
-        `SSID` text,
-        `Modem` text,
-        `Clave` text,
-        `Mascotas` int(1) DEFAULT NULL,
-        `Arrival_time` time NOT NULL,
-        `Departure_time` time NOT NULL,
-        `Descripcion` text,
-        `Status` int(1) DEFAULT NULL,
-        `Option` int(1) DEFAULT NULL,
-        `Creation_date` datetime NOT NULL,
         `Last_update` timestamp NOT NULL,
         PRIMARY KEY (`ID`)
     ) ENGINE = InnoDB DEFAULT CHARSET = utf8;

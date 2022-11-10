@@ -28,6 +28,7 @@ services:
     networks:
       - app-tier
   api:
+    container_name: homada_api
     stdin_open: true
     tty: true
     restart: always
