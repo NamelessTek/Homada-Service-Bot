@@ -22,6 +22,8 @@ class Config:
         "TWILIO_PHONE_NUMBER", 'whatsapp:+14155238886')
     TWILIO_STUDIO_FLOW_SID = os.environ.get(
         "TWILIO_STUDIO_FLOW_SID", "FW23fe4bb5fb61a0a3595a296e102e2ae5")
+    UPLOAD_FOLDER = os.environ.get(
+        "UPLOAD_FOLDER", 'App/homada/static/uploads')
 
     if not TWILIO_ACCOUNT_SID or not TWILIO_AUTH_TOKEN or not TWILIO_PHONE_NUMBER:
         raise Exception(

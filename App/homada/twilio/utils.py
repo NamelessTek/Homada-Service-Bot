@@ -1,4 +1,5 @@
 from homada.config import Config
+from flask import current_app
 from twilio.rest import Client as TwilioClient
 from homada.models import Ubicacion, Client, Booking, Questions, Admin
 from homada.reservaciones.utils import save_reservation, delete_reservation
@@ -82,7 +83,7 @@ def conversations_client(phone_number: str, incoming_message: str) -> list:
                 for message in flow_ubicacion(client, booking, ubicacion):
                     messages.append(message)
             case "2":
-                for message in flow_facturacion(incoming_message, phone_number):
+                for message in flow_facturacion(client, booking, ubicacion):
                     messages.append(message)
             case "3":
                 for message in flow_network(client, booking, ubicacion):
@@ -424,6 +425,7 @@ def incoming_message() -> str:
     phone_number = request.values.get('From', None).replace('whatsapp:', '')
     # Get the document of the person sending the text message
 
+    media_url = request.form.get('MediaUrl0', None)
     resp = MessagingResponse()
     admin = Admin.query.filter_by(phone=phone_number).first()
     if not admin:
@@ -437,6 +439,9 @@ def incoming_message() -> str:
             client_flow(incoming_message, resp, phone_number)
         elif incoming_message == 'cancelar reserva' or incoming_message == 'cancelar' or 'cancelar' in session:
             for message in cancel_reservation(incoming_message):
+                resp.message(message)
+        elif incoming_message == 'factura' or 'factura' in session:
+            for message in flow_facturacion(media_url, phone_number, incoming_message):
                 resp.message(message)
         else:
             if 'question_id' not in session and 'revision' not in session:
@@ -492,66 +497,50 @@ def cancel_reservation(incoming_message: str) -> list:
     return messages
 
 
-def flow_facturacion(incoming_message: str, phone_number: str, resp: str) -> str:
-    session['upload'] = True
+def flow_facturacion(media_url: str, phone_number: str, incoming_message: str) -> str:
+    session['factura'] = True
     messages = []
-    if incoming_message:
-        print(incoming_message)
-        if 'question_id' in session:
-            match session['question_id']:
-                case 9:
-                    print(f'{incoming_message}')
-                    media_url = request.form.get('MediaUrl0', None)
-                    if media_url:
-                        r = requests.get(media_url)
-                        print(r.content)
-                        content_type = r.headers['content-type']
-                        client = Client.query.filter_by(
-                            phone=phone_number).first()
-                        if content_type == 'application/pdf':
-                            filename = f'uploads/{client.name}/factura.pdf'
-                        else:
-                            filename = None
-                        if filename:
-                            if not os.path.exists(f'uploads/{client.name}'):
-                                os.makedirs(f'uploads/{client.name}')
-                            with open(filename, 'wb') as f:
-                                f.write(r.content)
-                            session['document'] = filename.replace(
-                                'uploads/', '')
-                            messages.append(
-                                f'Gracias por enviarnos tu factura {client.name} 😃')
-                            session['review_upload'] = True
-                        else:
-                            messages.append(
-                                f'Lo sentimos, no pudimos recibir tu factura, solo se aceptan archivos en formato PDF 😟')
-                            messages.append(
-                                Questions.query.filter_by(id=9, type_question="Factura").first().question)
-                            return messages
+    client = Client.query.filter_by(
+        phone=phone_number).first()
+    if 'question_id' in session:
+        match session['question_id']:
+            case 9:
+                media_url = request.form.get('MediaUrl0', None)
+                if media_url:
+                    r = requests.get(media_url)
+                    content_type = r.headers['content-type']
+                    if content_type == 'application/pdf':
+                        session['document'] = r.headers['content-disposition'].split('=')[
+                            1].replace('"', '').replace('+', ' ').replace('%3F', '')
+                        session['review_upload'] = True
                     else:
                         messages.append(
-                            f'Lo sentimos, no pudimos recibir tu factura 😟')
-                case _:
-                    pass
+                            f'Lo sentimos, no pudimos recibir tu factura, solo se aceptan archivos en formato PDF 😟')
+                        messages.append(
+                            Questions.query.filter_by(id=9, type_question="Factura").first().question)
+                        return messages
+                else:
+                    messages.append(
+                        f'Lo sentimos, no pudimos recibir tu factura 😟')
+            case _:
+                pass
 
-            if 'question_id' in session:
-                del session['question_id']
-            messages.append(
-                f'¿Estás seguro que deseas subir el documento {session["document"]}?')
+        if 'question_id' in session:
+            del session['question_id']
+        messages.append(
+            f'¿Estás seguro que deseas subir el documento {session["document"]}?')
 
-        elif 'review_upload' in session:
-            if incoming_message == 'si':
-                upload_document(filename, session['document'], phone_number)
-                messages.append(f'Documento subido')
-                delete_session_completly()
-            elif incoming_message == 'no':
-                messages.append('Documento no subido')
-        else:
-            question = Questions.query.filter_by(
-                id=9, type_question="Upload").first()
-            messages.append(question.question)
-            session['question_id'] = question.id
+    elif 'review_upload' in session:
+        if incoming_message == 'si':
+            upload_document(session['document'].replace(' ', '_'))
+            messages.append(f'Gracias por subir tu factura')
+            delete_session_completly()
+        elif incoming_message == 'no':
+            messages.append('Documento no subido')
     else:
-        print('No message')
+        question = Questions.query.filter_by(
+            id=9, type_question="Upload").first()
+        messages.append(question.question)
+        session['question_id'] = question.id
 
     return messages
