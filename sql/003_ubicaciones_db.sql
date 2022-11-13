@@ -14,6 +14,7 @@ CREATE TABLE
         `Mascotas` int(1) DEFAULT NULL,
         `Arrival_time` time NOT NULL,
         `Departure_time` time NOT NULL,
+        `Descripcion` text,
         `Status` tinyint(4) DEFAULT NULL,
         `Option` int(1) DEFAULT NULL,
         `Creation_date` datetime NOT NULL,

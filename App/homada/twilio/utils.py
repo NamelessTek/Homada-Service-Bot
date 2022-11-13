@@ -2,11 +2,14 @@ from homada.config import Config
 from twilio.rest import Client as TwilioClient
 from homada.models import Ubicacion, Client, Booking, Questions, Admin
 from homada.reservaciones.utils import save_reservation, delete_reservation
+from homada.documents.utils import upload_document
 from twilio.twiml.messaging_response import MessagingResponse
 from flask import session, request
 import phonenumbers
 import datetime
 import re
+import requests
+import os
 
 
 def validate_phone_number(phone_number: str) -> bool:
@@ -78,6 +81,9 @@ def conversations_client(phone_number: str, incoming_message: str) -> list:
             case "1":
                 for message in flow_ubicacion(client, booking, ubicacion):
                     messages.append(message)
+            case "2":
+                for message in flow_facturacion(incoming_message, phone_number):
+                    messages.append(message)
             case "3":
                 for message in flow_network(client, booking, ubicacion):
                     messages.append(message)
@@ -124,7 +130,7 @@ def flow_network(client: int, booking: int, ubicacion: int) -> list:
 
 
 def flow_ubicacion(client: int, booking: int, ubicacion: int) -> list:
-    ''' 
+    '''
     Conversation flow sending the location data to the user
     '''
     if client:
@@ -290,7 +296,7 @@ def delete_session_completly() -> None:
     Delete the keys in the session dictionary
     '''
     for key in list(session.keys()):
-        print(key, flush=True)
+        print(f'Eliminando {key}: {session[key]}', flush=True)
         del session[key]
 
 
@@ -356,7 +362,7 @@ def goodbye_twiml() -> str:
 
 
 def welcome_homada(resp) -> str:
-    ''' 
+    '''
     Sends a welcome message to the admin and a list of fields to fill in order to create a reservation and a client
     '''
     resp.message("Hola, bienvenido a Homada 👍")
@@ -366,8 +372,8 @@ def welcome_homada(resp) -> str:
         " - Nombre\n- Teléfono\n- Email\n- Número de reservación\n- Día de llegada\n- Hora de llegada\n- Día de partida\n- Hora de partida\n- ubicación")
 
 
-def welcome_client(resp) -> None:
-    ''' 
+def menu(resp) -> None:
+    '''
     Sends the client the menu of options
     '''
     resp.message(
@@ -383,13 +389,13 @@ def goodbye_client(resp) -> None:
 
 def client_flow(incoming_message, resp, phone_number) -> None:
     '''
-    Creates the flow for the client to follow if the client is already in the database, 
+    Creates the flow for the client to follow if the client is already in the database,
     has a reservation the incoming message is a menu option
     '''
     if incoming_message == "menu" or "menu" in session:
         if validate_phone_number(phone_number) or validate_reservation_number(incoming_message) or "reservacion" in session:
             if incoming_message == "menu" or session['menu'] == 3:
-                welcome_client(resp)
+                menu(resp)
                 session['menu'] = 0
             elif "menu" in session and session['menu'] == 1:
                 for message in conversations_client(phone_number, incoming_message):
@@ -416,6 +422,8 @@ def incoming_message() -> str:
     incoming_message = request.values.get('Body', '').lower()
     # Get the phone number of the person sending the text message
     phone_number = request.values.get('From', None).replace('whatsapp:', '')
+    # Get the document of the person sending the text message
+
     resp = MessagingResponse()
     admin = Admin.query.filter_by(phone=phone_number).first()
     if not admin:
@@ -480,5 +488,70 @@ def cancel_reservation(incoming_message: str) -> list:
             session['question_id'] = question.id
     else:
         pass
+
+    return messages
+
+
+def flow_facturacion(incoming_message: str, phone_number: str, resp: str) -> str:
+    session['upload'] = True
+    messages = []
+    if incoming_message:
+        print(incoming_message)
+        if 'question_id' in session:
+            match session['question_id']:
+                case 9:
+                    print(f'{incoming_message}')
+                    media_url = request.form.get('MediaUrl0', None)
+                    if media_url:
+                        r = requests.get(media_url)
+                        print(r.content)
+                        content_type = r.headers['content-type']
+                        client = Client.query.filter_by(
+                            phone=phone_number).first()
+                        if content_type == 'application/pdf':
+                            filename = f'uploads/{client.name}/factura.pdf'
+                        else:
+                            filename = None
+                        if filename:
+                            if not os.path.exists(f'uploads/{client.name}'):
+                                os.makedirs(f'uploads/{client.name}')
+                            with open(filename, 'wb') as f:
+                                f.write(r.content)
+                            session['document'] = filename.replace(
+                                'uploads/', '')
+                            messages.append(
+                                f'Gracias por enviarnos tu factura {client.name} 😃')
+                            session['review_upload'] = True
+                        else:
+                            messages.append(
+                                f'Lo sentimos, no pudimos recibir tu factura, solo se aceptan archivos en formato PDF 😟')
+                            messages.append(
+                                Questions.query.filter_by(id=9, type_question="Factura").first().question)
+                            return messages
+                    else:
+                        messages.append(
+                            f'Lo sentimos, no pudimos recibir tu factura 😟')
+                case _:
+                    pass
+
+            if 'question_id' in session:
+                del session['question_id']
+            messages.append(
+                f'¿Estás seguro que deseas subir el documento {session["document"]}?')
+
+        elif 'review_upload' in session:
+            if incoming_message == 'si':
+                upload_document(filename, session['document'], phone_number)
+                messages.append(f'Documento subido')
+                delete_session_completly()
+            elif incoming_message == 'no':
+                messages.append('Documento no subido')
+        else:
+            question = Questions.query.filter_by(
+                id=9, type_question="Upload").first()
+            messages.append(question.question)
+            session['question_id'] = question.id
+    else:
+        print('No message')
 
     return messages

@@ -162,3 +162,27 @@ class Booking(db.Model):
 
     def __str__(self) -> str:
         return f'Booking({", ".join([f"{column.name}:{getattr(self, column.name)}" for column in self.__table__.columns])})'
+
+
+@dataclass
+class Uploads(db.Model):
+    '''
+    Uploads Model for storing client document uploads
+    '''
+    __tablename__ = 'Uploads'
+    id: int = db.Column(db.Integer, primary_key=True,
+                        autoincrement=True, nullable=False)
+    url: str = db.Column(db.String(280), nullable=False)
+    file_name: str = db.Column(db.String(280), nullable=False)
+    document: str = db.Column(db.String(280), nullable=False)
+    status: bool = db.Column(db.Integer, nullable=False, default=True)
+    creation_date: str = db.Column(
+        db.DateTime, nullable=False, default=datetime.now)
+    last_update: str = db.Column(
+        db.TIMESTAMP, nullable=False, default=datetime.now, onupdate=datetime.now)
+
+    def get_data(self) -> dict:
+        return {column.name: getattr(self, column.name) for column in self.__table__.columns}
+
+    def __str__(self) -> str:
+        return f'Uploads({", ".join([f"{column.name}:{getattr(self, column.name)}" for column in self.__table__.columns])})'

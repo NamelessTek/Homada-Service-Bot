@@ -54,4 +54,8 @@ VALUES (
         8,
         '¿Cuál es el número de la reserva?',
         'Cancelacion'
+    ), (
+        9,
+        'Por favor envíe el documento a dar de alta',
+        'Upload'
     );
