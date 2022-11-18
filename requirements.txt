@@ -35,3 +35,4 @@ phonenumbers
 email_validator
 flask_admin
 Flask-Session
+Flask_Mail == 0.9.1

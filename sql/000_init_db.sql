@@ -8,8 +8,6 @@ SET foreign_key_checks = 0;
 
 SET sql_mode = 'NO_AUTO_VALUE_ON_ZERO';
 
-DROP TABLE IF EXISTS `Admin`;
-
 set character_set_client = 'utf8';
 
 set character_set_connection = 'utf8';

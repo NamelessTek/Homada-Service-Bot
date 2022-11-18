@@ -1,5 +1,4 @@
 from homada.config import Config
-from flask import current_app
 from twilio.rest import Client as TwilioClient
 from homada.models import Ubicacion, Client, Booking, Questions, Admin
 from homada.reservaciones.utils import save_reservation, delete_reservation
@@ -10,7 +9,6 @@ import phonenumbers
 import datetime
 import re
 import requests
-import os
 
 
 def validate_phone_number(phone_number: str) -> bool:
@@ -60,21 +58,23 @@ def validate_date(date: str) -> bool:
         return False
 
 
-def conversations_client(phone_number: str, incoming_message: str) -> list:
+def conversations_client(phone_number: str, incoming_message: str) -> list[str]:
     '''
     Conversations with the user
     '''
-    messages = []
+    messages: list[str] = []
+
     client = Client.query.filter_by(phone=phone_number).first()
-    booking = Booking.query.filter_by(cliente_id=client.id).first()
+    booking = Booking.query.filter_by(cliente_id=client.id, status=1).first()
 
     ubicacion = Ubicacion.query.filter_by(
         id=booking.ubicacion_id).first() if booking else None
     if not client:
         booking = Booking.query.filter_by(
-            booking_number=session['reservacion']).first()
+            booking_number=session['reservacion'], status=1).first()
     else:
-        booking = Booking.query.filter_by(cliente_id=client.id).first()
+        booking = Booking.query.filter_by(
+            cliente_id=client.id, status=1).first()
         ubicacion = Ubicacion.query.filter_by(
             id=booking.ubicacion_id).first() if booking else None
     if incoming_message:
@@ -106,8 +106,8 @@ def flow_network(client: int, booking: int, ubicacion: int) -> list:
             f'¡Hola {client.name}! Hola bienvenido a Homada, muchas gracias por tu preferencia']
         if booking:
             messages.extend(
-                [f'Sabemos que puedes necesitar conexión a internet, la red es {ubicacion.ssid} y el password es {ubicacion.clave}.',
-                 'En caso de necesitar apoyo por favor escribe en el chat la palabra "menú"'])
+                [f'Sabemos que puedes necesitar conexión a internet, la red es {font_weight("bold", ubicacion.ssid)} y el password es {font_weight("bold",ubicacion.clave)}.',
+                 f'En caso de necesitar apoyo por favor escribe en el chat la palabra {font_weight("bold", "menú")}.'])
 
             if 'menu' in session:
                 delete_session()
@@ -120,7 +120,7 @@ def flow_network(client: int, booking: int, ubicacion: int) -> list:
         if booking:
             messages.extend(
                 [f'Sabemos que puedes necesitar conexión a internet, la red es {ubicacion.ssid} y el password es {ubicacion.clave}.',
-                 'En caso de necesitar apoyo por favor escribe en el chat la palabra "menú"'])
+                 f'En caso de necesitar apoyo por favor escribe en el chat la palabra {font_weight("bold", "menú")}.'])
 
             if 'menu' in session:
                 delete_session()
@@ -161,11 +161,11 @@ def flow_ubicacion(client: int, booking: int, ubicacion: int) -> list:
     return messages
 
 
-def conversations_homada(incoming_message: str) -> list:
+def conversations_homada(incoming_message: str) -> list[str]:
     '''
     Conversations with the homada user
     '''
-    messages = []
+    messages: list[str] = []
 
     if incoming_message:
         if 'question_id' in session:
@@ -316,7 +316,7 @@ def redirect_to_first_question() -> str:
     return first_question.question
 
 
-def font(style: str, text: str) -> str:
+def font_weight(style: str, text: str) -> None:
     '''
     Return the text with the style
     '''
@@ -346,7 +346,7 @@ def review_user() -> str:
 {bold("-No. Reservación:")} {session['num_reservacion_cliente']}
 {bold("-Día de llegada:")} {session['dia_llegada_cliente']}
 {bold("-Día de salida:")} {session['dia_salida_cliente']}
-{bold("-Día de salida:")} {(session['ubicacion_cliente']).title()}
+{bold("-Ubicación de Hospedaje:")} {(session['ubicacion_cliente']).title()}
 {bold("-Hora de llegada:")} {session['hr_llegada_cliente']}
 {bold("-Hora de salida:")} {session['hr_salida_cliente']}
 
@@ -456,12 +456,12 @@ def incoming_message() -> str:
     return str(resp)
 
 
-def cancel_reservation(incoming_message: str) -> list:
+def cancel_reservation(incoming_message: str) -> list[str]:
     '''
     Cancel reservation
     '''
     session['cancelar'] = True
-    messages = []
+    messages: list[str] = []
     if incoming_message:
         if 'question_id' in session:
             match  session['question_id']:
@@ -499,9 +499,7 @@ def cancel_reservation(incoming_message: str) -> list:
 
 def flow_facturacion(media_url: str, phone_number: str, incoming_message: str) -> str:
     session['factura'] = True
-    messages = []
-    client = Client.query.filter_by(
-        phone=phone_number).first()
+    messages: list[str] = []
     if 'question_id' in session:
         match session['question_id']:
             case 9:
