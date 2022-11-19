@@ -173,7 +173,6 @@ class Uploads(db.Model):
     id: int = db.Column(db.Integer, primary_key=True,
                         autoincrement=True, nullable=False)
     url: str = db.Column(db.String(280), nullable=False)
-    file_name: str = db.Column(db.String(280), nullable=False)
     document: str = db.Column(db.String(280), nullable=False)
     status: bool = db.Column(db.Integer, nullable=False, default=True)
     creation_date: str = db.Column(

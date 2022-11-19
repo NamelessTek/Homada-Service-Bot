@@ -6,7 +6,6 @@ CREATE TABLE
     `Uploads` (
         `ID` int(11) NOT NULL AUTO_INCREMENT,
         `URL` text NOT NULL,
-        `File_name` text NOT NULL,
         `Document` text NOT NULL,
         `Status` tinyint(4) NOT NULL,
         `Creation_date` datetime NOT NULL,

@@ -3,6 +3,7 @@ from twilio.rest import Client as TwilioClient
 from homada.models import Ubicacion, Client, Booking, Questions, Admin
 from homada.reservaciones.utils import save_reservation, delete_reservation
 from homada.documents.utils import upload_document
+from homada.email.utils import send_email
 from twilio.twiml.messaging_response import MessagingResponse
 from flask import session, request
 import phonenumbers
@@ -297,11 +298,10 @@ def delete_session_completly() -> None:
     Delete the keys in the session dictionary
     '''
     for key in list(session.keys()):
-        print(f'Eliminando {key}: {session[key]}', flush=True)
         del session[key]
 
 
-def delete_session():
+def delete_session() -> None:
     '''
     Delete the keys in the session dictionary
     '''
@@ -388,7 +388,7 @@ def goodbye_client(resp) -> None:
     resp.message(f'¡Adiós! Esperamos verte pronto 😃')
 
 
-def client_flow(incoming_message, resp, phone_number) -> None:
+def client_flow(incoming_message: str, resp: str, phone_number: str) -> None:
     '''
     Creates the flow for the client to follow if the client is already in the database,
     has a reservation the incoming message is a menu option
@@ -441,7 +441,7 @@ def incoming_message() -> str:
             for message in cancel_reservation(incoming_message):
                 resp.message(message)
         elif incoming_message == 'factura' or 'factura' in session:
-            for message in flow_facturacion(media_url, phone_number, incoming_message):
+            for message in flow_facturacion(media_url, incoming_message):
                 resp.message(message)
         else:
             if 'question_id' not in session and 'revision' not in session:
@@ -497,7 +497,7 @@ def cancel_reservation(incoming_message: str) -> list[str]:
     return messages
 
 
-def flow_facturacion(media_url: str, phone_number: str, incoming_message: str) -> str:
+def flow_facturacion(media_url: str, incoming_message: str) -> str:
     session['factura'] = True
     messages: list[str] = []
     if 'question_id' in session:
@@ -510,6 +510,8 @@ def flow_facturacion(media_url: str, phone_number: str, incoming_message: str) -
                     if content_type == 'application/pdf':
                         session['document'] = r.headers['content-disposition'].split('=')[
                             1].replace('"', '').replace('+', ' ').replace('%3F', '')
+                        print(f'El documento es: {session["document"]}')
+                        session['content'] = r.content
                         session['review_upload'] = True
                     else:
                         messages.append(
@@ -530,7 +532,9 @@ def flow_facturacion(media_url: str, phone_number: str, incoming_message: str) -
 
     elif 'review_upload' in session:
         if incoming_message == 'si':
-            upload_document(session['document'].replace(' ', '_'))
+            upload_document(session['document'].replace(
+                ' ', '_'), session['content'])
+            send_email("luisitocedillo@gmail.com")
             messages.append(f'Gracias por subir tu factura')
             delete_session_completly()
         elif incoming_message == 'no':

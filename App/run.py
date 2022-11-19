@@ -5,7 +5,7 @@ from werkzeug.exceptions import HTTPException
 import traceback
 from flask_admin import Admin
 from homada.models import Ubicacion, Booking, Client, Questions
-
+from flask_mail import Mail
 from flask_admin.contrib.sqla import ModelView
 
 
