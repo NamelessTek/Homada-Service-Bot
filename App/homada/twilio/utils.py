@@ -355,6 +355,11 @@ Contesta con "si" o "no"
     return review_text
 
 
+def error_twiml() -> str:
+    goodbye = f"No pude entender tu respuesta 😟 Inténtalo nuevamente 👇🏼 o escribe menu para desplegar las opciones con las que podemos apoyarte."
+    delete_session()
+    return goodbye
+    
 def goodbye_twiml() -> str:
     goodbye = f"Ya quedo creada la reservación {session['num_reservacion_cliente']} :)"
     delete_session()
@@ -394,14 +399,27 @@ def client_flow(incoming_message: str, resp: str, phone_number: str) -> None:
     '''
     if incoming_message == "menu" or "menu" in session:
         if validate_phone_number(phone_number) or validate_reservation_number(incoming_message) or "reservacion" in session:
-            if incoming_message == "menu" or session['menu'] == 3:
-                menu(resp)
+            client = Client.query.filter_by(phone=phone_number).first()
+            if not client:
+                booking = Booking.query.filter_by(
+                    booking_number=session['reservacion'], status=1).first()
+            else:           
+                booking = Booking.query.filter_by(
+                    cliente_id=client.id, status=1).first()
+                if not booking:
+                    client = None
+            if client or booking:
+                if incoming_message == "menu" or session['menu'] == 3:
+                    menu(resp)
+                    session['menu'] = 0
+                elif "menu" in session and session['menu'] == 1:
+                    for message in conversations_client(phone_number, incoming_message):
+                        resp.message(message)
+                if "menu" not in session or session['menu'] == 0:
+                    session['menu'] = 1
+            else:
                 session['menu'] = 0
-            elif "menu" in session and session['menu'] == 1:
-                for message in conversations_client(phone_number, incoming_message):
-                    resp.message(message)
-            if "menu" not in session or session['menu'] == 0:
-                session['menu'] = 1
+                no_reservation_found(resp)
         else:
             session['menu'] = 0
             no_reservation_found(resp)
@@ -429,7 +447,14 @@ def incoming_message() -> str:
     admin = Admin.query.filter_by(phone=phone_number).first()
     if not admin:
         # Client conversation
-        client_flow(incoming_message, resp, phone_number)
+        if incoming_message == "salir" or incoming_message == "adios" or incoming_message == "gracias":
+            delete_session_completly()
+            goodbye_client(resp)
+        elif incoming_message == "menu" or "menu" in session:
+            client_flow(incoming_message, resp, phone_number)
+        else:
+            no_reservation_found(resp)
+            session['reservacion'] = 1
     elif phone_number == admin.phone:
         if incoming_message == "salir" or incoming_message == "adios" or incoming_message == "gracias":
             delete_session_completly()
