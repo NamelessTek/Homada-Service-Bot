@@ -31,7 +31,7 @@ class Admin(db.Model):
 @dataclass
 class Ubicacion(db.Model):
     '''
-    Ubicacion Model for storing ubicacion related details 
+    Ubicacion Model for storing ubicacion related details
     '''
     __tablename__ = 'Ubicacion'
 
@@ -107,7 +107,7 @@ class Questions(db.Model):
 @dataclass
 class Client(db.Model):
     '''
-    Client Model for storing client related data 
+    Client Model for storing client related data
     '''
     __tablename__ = 'Client'
 
@@ -125,6 +125,10 @@ class Client(db.Model):
     # child relationship
     bookings = db.relationship(
         'Booking', backref='client', lazy='dynamic')
+
+    # document_id = db.relationship('Upload',
+    #                               secondary=Relation_client_document_table,
+    #                               backref=db.backref('document_id', lazy='dynamic'))
 
     def get_data(self) -> dict:
         return {column.name: getattr(self, column.name) for column in self.__table__.columns}
@@ -179,6 +183,11 @@ class Uploads(db.Model):
         db.DateTime, nullable=False, default=datetime.now)
     last_update: str = db.Column(
         db.TIMESTAMP, nullable=False, default=datetime.now, onupdate=datetime.now)
+
+    # Foreign Keys
+    cliente_id: int = db.relationship('Client',
+                                      secondary=Relation_client_document_table,
+                                      backref=db.backref('cliente_id', lazy='dynamic'))
 
     def get_data(self) -> dict:
         return {column.name: getattr(self, column.name) for column in self.__table__.columns}
