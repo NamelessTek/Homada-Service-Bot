@@ -54,7 +54,7 @@ def validate_date(date: str) -> bool:
     '''
     try:
         date = datetime.datetime.strptime(date, '%d-%m-%Y')
-        return date >= datetime.datetime.now()
+        return date >= datetime.datetime.now() - datetime.timedelta(days=1)
     except Exception:
         return False
 
@@ -213,7 +213,7 @@ def conversations_homada(incoming_message: str) -> list[str]:
                         return messages
                 case 6:
                     # validate that the date is in the corredt format and that it is a date that has not yet passed and that it is greater than the arrival date
-                    if validate_date(incoming_message):
+                    if validate_date(incoming_message) and incoming_message > session['dia_llegada_cliente']:
                         session['dia_salida_cliente'] = incoming_message
                         print(
                             f"Dia de salida del cliente {session['dia_salida_cliente']}", flush=True)
