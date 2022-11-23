@@ -54,7 +54,7 @@ def validate_date(date: str) -> bool:
     '''
     try:
         date = datetime.datetime.strptime(date, '%d-%m-%Y')
-        return date >= datetime.datetime.now()
+        return date >= datetime.datetime.now() - datetime.timedelta(days=1)
     except Exception:
         return False
 
@@ -213,7 +213,7 @@ def conversations_homada(incoming_message: str) -> list[str]:
                         return messages
                 case 6:
                     # validate that the date is in the corredt format and that it is a date that has not yet passed and that it is greater than the arrival date
-                    if validate_date(incoming_message):
+                    if validate_date(incoming_message) and incoming_message > session['dia_llegada_cliente']:
                         session['dia_salida_cliente'] = incoming_message
                         print(
                             f"Dia de salida del cliente {session['dia_salida_cliente']}", flush=True)
@@ -281,15 +281,21 @@ def notify_client(phone_number: str) -> None:
     '''
     client = Client.query.filter_by(phone=phone_number).first()
     if client:
-        body = f"¡Hola {client.name}!, muchas gracias por tu preferencia. Para tu entrada el día {session['dia_llegada_cliente']}, queremos compartirte algunos datos. Para tu facilidad, el link de navegación es el siguiente: {session['ubicacion_cliente']}. En caso de necesitar apoyo por favor escribe en el chat la palabra 'menú'"
+
+        ubicacion = Ubicacion.query.filter_by(
+            ubicacion=session['ubicacion_cliente']).first()
+        hora_llegada = session['hr_llegada_cliente'].strftime(
+            "%H") + "pm" if int(session['hr_llegada_cliente'].strftime("%H")) > 12 else "am"
+        body = [
+            f"¡Hola {client.name}, bienvenido a Homada!, muchas gracias por tu preferencia.", f"Para tu entrada el día {font_weight('bold',session['dia_llegada_cliente'])}, queremos compartirte algunos datos. La hora de entrada es a las {font_weight('bold',hora_llegada)}. Sabemos que puedes necesitar conexión a internet, la red es {font_weight('bold',ubicacion.ssid)} y el password es {font_weight('bold',ubicacion.clave)}. Para tu facilidad el link de navegación es el siguiente: {font_weight('bold',ubicacion.url)}.", f" En caso de necesitar apoyo por favor escribe en el chat la palabra {font_weight('bold', 'menú')}"]
         client = TwilioClient(
             Config.TWILIO_ACCOUNT_SID, Config.TWILIO_AUTH_TOKEN)
-        message = client.messages.create(
-            to=f'whatsapp:{phone_number}',
-            from_=Config.TWILIO_PHONE_NUMBER,
-            body=body
-        )
-        print(message.sid, flush=True)
+        for message in body:
+            client.messages.create(
+                to=f'whatsapp:{phone_number}',
+                from_=Config.TWILIO_PHONE_NUMBER,
+                body=message
+            )
 
 
 def delete_session_completly() -> None:
