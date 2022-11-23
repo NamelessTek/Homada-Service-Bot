@@ -66,13 +66,12 @@ def conversations_client(phone_number: str, incoming_message: str) -> list[str]:
     messages: list[str] = []
 
     client = Client.query.filter_by(phone=phone_number).first()
-    booking = Booking.query.filter_by(cliente_id=client.id, status=1).first()
 
-    ubicacion = Ubicacion.query.filter_by(
-        id=booking.ubicacion_id).first() if booking else None
     if not client:
         booking = Booking.query.filter_by(
             booking_number=session['reservacion'], status=1).first()
+        ubicacion = Ubicacion.query.filter_by(
+            id=booking.ubicacion_id).first() if booking else None
     else:
         booking = Booking.query.filter_by(
             cliente_id=client.id, status=1).first()
