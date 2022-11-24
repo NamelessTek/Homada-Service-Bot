@@ -2,75 +2,11 @@ from homada.config import Config
 from twilio.rest import Client as TwilioClient
 from homada.models import Ubicacion, Client, Booking, Questions, Admin
 from homada.reservaciones.utils import save_reservation, delete_reservation
-from homada.documents.utils import upload_document
 from homada.email.utils import send_email
+from homada.facturacion.utils import flow_facturacion
+from homada.tools.utils import *
 from twilio.twiml.messaging_response import MessagingResponse
 from flask import session, request
-import phonenumbers
-import datetime
-import re
-import requests
-
-
-def validate_phone_number(phone_number: str) -> bool:
-    '''
-    Validate phone number
-    '''
-    try:
-        phone = phonenumbers.parse(phone_number.strip(), None)
-        client = Client.query.filter_by(phone=phone_number).first()
-        return phonenumbers.is_valid_number(phone) and client is not None
-    except Exception:
-        return False
-
-
-def validate_email(email: str) -> bool:
-    '''
-    Validate email
-    '''
-    try:
-        return re.match(r"[^@]+@[^@]+\.[^@]+", email)
-    except Exception:
-        return False
-
-
-# def validate_location(location: str) -> bool:
-#     '''
-#     Validate location
-#     '''
-#     # use regex to validate if incoming message is a location in DB, else show answers that are similar to the incoming message
-#     try:
-#         location = Ubicacion.query.filter_by(
-#             name=location.strip().lower()).first()
-#         re.match(r"[^@]+@[^@]+\.[^@]+", location)
-#         return location is not None
-#     except Exception:
-#         return False
-
-
-def validate_reservation_number(reservation_number: str) -> bool:
-    '''
-    Validate reservation number
-    '''
-    try:
-        reservation = Booking.query.filter_by(
-            booking_number=reservation_number).first()
-        session['reservación'] = reservation.booking_number
-        session['menú'] = 3
-        return True
-    except Exception:
-        return False
-
-
-def validate_date(date: str) -> bool:
-    '''
-    Validate that the date is in the correct format dd-mm-yyyy and that it is not a past date
-    '''
-    try:
-        date = datetime.datetime.strptime(date, '%d-%m-%Y')
-        return date >= datetime.datetime.now() - datetime.timedelta(days=1)
-    except Exception:
-        return False
 
 
 def conversations_client(phone_number: str, incoming_message: str) -> list[str]:
@@ -303,23 +239,6 @@ def notify_client(phone_number: str) -> None:
             )
 
 
-def delete_session_completly() -> None:
-    '''
-    Delete the keys in the session dictionary
-    '''
-    for key in list(session.keys()):
-        del session[key]
-
-
-def delete_session() -> None:
-    '''
-    Delete the keys in the session dictionary
-    '''
-    for key in ['question_id', 'revision', 'nombre_cliente', 'telefono_cliente', 'email_cliente', 'num_reservacion_cliente', 'dia_llegada_cliente', 'dia_salida_cliente', 'ubicacion_cliente', 'hr_llegada_cliente', 'hr_salida_cliente']:
-        if key in session:
-            del session[key]
-
-
 def redirect_to_first_question() -> str:
     '''
     Redirect the user to the first question
@@ -541,55 +460,4 @@ def cancel_reservation(incoming_message: str) -> list[str]:
     else:
         pass
 
-    return messages
-
-
-def flow_facturacion(incoming_message: str) -> str:
-
-    messages: list[str] = []
-    if 'question_id' in session:
-        match session['question_id']:
-            case 9:
-                media_url = request.form.get('MediaUrl0', None)
-                if media_url:
-                    r = requests.get(media_url)
-                    content_type = r.headers['content-type']
-                    if content_type == 'application/pdf':
-                        session['document'] = r.headers['content-disposition'].split('=')[
-                            1].replace('"', '').replace('+', ' ').replace('%3F', '')
-                        session['content'] = r.content
-                        session['review_upload'] = True
-                    else:
-                        messages.append(
-                            f'Lo sentimos, no pudimos recibir tu factura, solo se aceptan archivos en formato PDF 😟')
-                        messages.append(
-                            Questions.query.filter_by(id=9, type_question="Factura").first().question)
-                        return messages
-                else:
-                    messages.append(
-                        f'Lo sentimos, no pudimos recibir tu factura 😟')
-            case _:
-                pass
-
-        if 'question_id' in session:
-            del session['question_id']
-        messages.append(
-            f'¿Estás seguro que deseas subir el documento {session["document"]}?')
-
-    elif 'review_upload' in session:
-        if incoming_message == 'si':
-            upload_document(session['document'].replace(
-                ' ', '_'), session['content'])
-            # send_email("luisitocedillo@gmail.com")
-            messages.append(f'Gracias por subir tu factura')
-            delete_session_completly()
-        elif incoming_message == 'no':
-            messages.append('Documento no subido')
-    else:
-        delete_session()
-        question = Questions.query.filter_by(
-            id=9, type_question="Upload").first()
-        messages.append(question.question)
-        session['question_id'] = question.id
-    session['factura'] = True
     return messages
