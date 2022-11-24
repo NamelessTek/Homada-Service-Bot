@@ -365,7 +365,8 @@ def error_twiml() -> str:
     goodbye = f"No pude entender tu respuesta 😟 Inténtalo nuevamente 👇🏼 o escribe menu para desplegar las opciones con las que podemos apoyarte."
     delete_session()
     return goodbye
-    
+
+
 def goodbye_twiml() -> str:
     goodbye = f"Ya quedo creada la reservación {session['num_reservacion_cliente']} :)"
     delete_session()
@@ -409,7 +410,7 @@ def client_flow(incoming_message: str, resp: str, phone_number: str) -> None:
             if not client:
                 booking = Booking.query.filter_by(
                     booking_number=session['reservacion'], status=1).first()
-            else:           
+            else:
                 booking = Booking.query.filter_by(
                     cliente_id=client.id, status=1).first()
                 if not booking:

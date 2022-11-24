@@ -23,8 +23,6 @@ class Config:
         "TWILIO_AUTH_TOKEN", '674fe0bc1d80710bfcf19a3f8dc429cd')
     TWILIO_PHONE_NUMBER = os.environ.get(
         "TWILIO_PHONE_NUMBER", 'whatsapp:+14155238886')
-    TWILIO_STUDIO_FLOW_SID = os.environ.get(
-        "TWILIO_STUDIO_FLOW_SID", "FW23fe4bb5fb61a0a3595a296e102e2ae5")
 
     # URL for uploading pdfs
     UPLOAD_FOLDER = os.environ.get(
