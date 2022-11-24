@@ -69,6 +69,34 @@ def validate_date(date: str) -> bool:
         return False
 
 
+def font_weight(style: str, text: str) -> None:
+    '''
+    Return the text with:
+    style: 
+    - bold
+    - italic
+    - underline
+    '''
+    match style:
+        case "bold":
+            return f"*{text}*"
+        case "italic":
+            return f"_{text}_"
+        case "code":
+            return f"`{text}`"
+        case "pre":
+            return f"```{text}```"
+        case _:
+            raise ValueError(f"Unknown style: {style}")
+
+
+def no_reservation_found(resp) -> str:
+    '''No reservation found message'''
+    resp.message(
+        'Lo sentimos, no pudimos encontrar una reservación a tu nombre 😟')
+    resp.message('Por favor compartenos tu número de reservación.')
+
+
 # def validate_location(location: str) -> bool:
 #     '''
 #     Validate location

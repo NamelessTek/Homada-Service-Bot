@@ -1,3 +1,4 @@
+from homada.tools.utils import delete_session_completly
 from homada import db
 from homada.models import Booking, Client, Ubicacion
 from homada.clientes.utils import create_client
@@ -58,3 +59,42 @@ def delete_reservation(booking_no: str) -> None:
     reservation = Booking.query.filter_by(booking_number=booking_no).first()
     reservation.status = False
     db.session.commit()
+
+
+def cancel_reservation(incoming_message: str) -> list[str]:
+    '''
+    Cancel reservation
+    '''
+    session['cancelar'] = True
+    messages: list[str] = []
+    if incoming_message:
+        if 'question_id' in session:
+            match  session['question_id']:
+                case 8:
+                    session['booking_no'] = incoming_message
+                case _:
+                    pass
+            session['review_cancel'] = True
+            if 'question_id' in session:
+                del session['question_id']
+            messages.append(
+                f'¿Estás seguro que deseas cancelar la reservación {session["booking_no"]}?')
+
+        elif 'review_cancel' in session:
+            if incoming_message == 'si':
+                # delete the reservation from the database with the booking number
+                delete_reservation(session['booking_no'])
+                messages.append(f'Reservación cancelada')
+                delete_session_completly()
+            elif incoming_message == 'no':
+                messages.append('Reservación no cancelada')
+                delete_session_completly()
+        else:
+            question = Questions.query.filter_by(
+                id=8, type_question="Cancelacion").first()
+            messages.append(question.question)
+            session['question_id'] = question.id
+    else:
+        pass
+
+    return messages
