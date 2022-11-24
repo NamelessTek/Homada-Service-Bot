@@ -14,5 +14,13 @@ def create_client(name: str, phone: str, email: str) -> Client:
     Create client data in the database by receiving the name, last name, phone and email
     from whatsApp
     '''
-    db.session.add(Client(name=name, phone=phone, email=email))
-    db.session.commit()
+    query_client = Client.query.filter_by(phone=phone).first()
+    if not query_client:
+
+        client = Client(name=name, phone=phone, email=email)
+        db.session.add(client)
+        db.session.commit()
+    else:
+        raise Exception('Client already exists')
+
+    return client

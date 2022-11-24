@@ -194,3 +194,28 @@ class Uploads(db.Model):
 
     def __str__(self) -> str:
         return f'Uploads({", ".join([f"{column.name}:{getattr(self, column.name)}" for column in self.__table__.columns])})'
+
+
+@dataclass
+class Log(db.Model):
+    '''
+    Log Model for storing 
+    '''
+    __tablename__ = 'Log'
+    id: int = db.Column(db.Integer, primary_key=True,
+                        autoincrement=True, nullable=False)
+    type: str = db.Column(db.String(280), nullable=False)
+    object_id: int = db.Column(db.Integer, nullable=False)
+    action: str = db.Column(db.String(280), nullable=False)
+    date: str = db.Column(
+        db.DateTime, nullable=False, default=datetime.now)
+
+    # Foreign Keys
+    admin_id: int = db.Column(db.Integer, db.ForeignKey(
+        'Admin.id'), nullable=False)
+
+    def get_data(self) -> dict:
+        return {column.name: getattr(self, column.name) for column in self.__table__.columns}
+
+    def __str__(self) -> str:
+        return f'Log({", ".join([f"{column.name}:{getattr(self, column.name)}" for column in self.__table__.columns])})'

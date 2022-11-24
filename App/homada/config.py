@@ -27,6 +27,9 @@ class Config:
     # URL for uploading pdfs
     UPLOAD_FOLDER = os.environ.get(
         "UPLOAD_FOLDER", 'App/homada/static/uploads')
+    # check if the folder exists
+    if not os.path.exists(UPLOAD_FOLDER):
+        os.makedirs(UPLOAD_FOLDER)
 
     # Flask-Mail SMTP server settings
     MAIL_SERVER = os.environ.get("MAIL_SERVER", 'smtp.@gmail.com')
