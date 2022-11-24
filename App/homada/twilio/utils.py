@@ -23,7 +23,6 @@ def validate_phone_number(phone_number: str) -> bool:
     except Exception:
         return False
 
-
 def validate_email(email: str) -> bool:
     '''
     Validate email
@@ -32,7 +31,6 @@ def validate_email(email: str) -> bool:
         return re.match(r"[^@]+@[^@]+\.[^@]+", email)
     except Exception:
         return False
-
 
 def validate_location(location: str) -> bool:
     '''
@@ -47,7 +45,6 @@ def validate_location(location: str) -> bool:
     except Exception:
         return False
 
-
 def validate_reservation_number(reservation_number: str) -> bool:
     '''
     Validate reservation number
@@ -61,7 +58,6 @@ def validate_reservation_number(reservation_number: str) -> bool:
     except Exception:
         return False
 
-
 def validate_date(date: str) -> bool:
     '''
     Validate that the date is in the correct format dd-mm-yyyy and that it is not a past date
@@ -71,7 +67,6 @@ def validate_date(date: str) -> bool:
         return date >= datetime.datetime.now() - datetime.timedelta(days=1)
     except Exception:
         return False
-
 
 def conversations_client(phone_number: str, incoming_message: str) -> list[str]:
     '''
@@ -113,7 +108,6 @@ def conversations_client(phone_number: str, incoming_message: str) -> list[str]:
     # print(session)
     return messages
 
-
 def flow_network(client: int, booking: int, ubicacion: int) -> list:
     '''
     Conversation flow sending the network data to the user
@@ -146,7 +140,6 @@ def flow_network(client: int, booking: int, ubicacion: int) -> list:
                 f'{client.name}, no tienes reservaciones, por favor haz una reservación')
     return messages
 
-
 def flow_ubicacion(client: int, booking: int, ubicacion: int) -> list:
     '''
     Conversation flow sending the location data to the user
@@ -176,7 +169,6 @@ def flow_ubicacion(client: int, booking: int, ubicacion: int) -> list:
             messages.append(
                 f'{client.name}, no tienes reservaciones, por favor haz una reservación')
     return messages
-
 
 def conversations_admin(incoming_message: str) -> list[str]:
     '''
@@ -284,7 +276,6 @@ def conversations_admin(incoming_message: str) -> list[str]:
 
     return messages
 
-
 def notify_client(phone_number: str) -> None:
     '''
     Send a notification to the client telling him about the reservation
@@ -307,14 +298,12 @@ def notify_client(phone_number: str) -> None:
                 body=message
             )
 
-
 def delete_session_completly() -> None:
     '''
     Delete the keys in the session dictionary
     '''
     for key in list(session.keys()):
         del session[key]
-
 
 def delete_session() -> None:
     '''
@@ -324,12 +313,10 @@ def delete_session() -> None:
         if key in session:
             del session[key]
 
-
 def redirect_to_first_question() -> str:
     first_question = Questions.query.order_by(Questions.id).first()
     session['question_id'] = first_question.id
     return first_question.question
-
 
 def font_weight(style: str, text: str) -> None:
     '''
@@ -350,7 +337,6 @@ def font_weight(style: str, text: str) -> None:
             return f"```{text}```"
         case _:
             raise ValueError(f"Unknown style: {style}")
-
 
 def review_user() -> str:
     '''
@@ -374,18 +360,15 @@ Contesta con "si" o "no"
 '''
     return review_text
 
-
 def error_twiml() -> str:
     goodbye = f"No pude entender tu respuesta 😟 Inténtalo nuevamente 👇🏼 o escribe menu para desplegar las opciones con las que podemos apoyarte."
     delete_session()
     return goodbye
 
-
 def goodbye_twiml() -> str:
     goodbye = f"Ya quedo creada la reservación {session['num_reservacion_cliente']} :)"
     delete_session()
     return goodbye
-
 
 def welcome_homada(resp) -> str:
     '''
@@ -397,7 +380,6 @@ def welcome_homada(resp) -> str:
     resp.message(
         " - Nombre\n- Teléfono\n- Email\n- Número de reservación\n- Día de llegada\n- Hora de llegada\n- Día de partida\n- Hora de partida\n- ubicación")
 
-
 def menu(resp) -> None:
     '''
     Sends the client the menu of options
@@ -405,13 +387,11 @@ def menu(resp) -> None:
     resp.message(
         "¿Qué deseas hacer? 💫\n1. Obtener Ubicación 📍\n2. Facturación 💳\n3. Clave WIFI 🔐")
 
-
 def goodbye_client(resp) -> None:
     '''
     Sends a goodbye message to the client
     '''
     resp.message(f'¡Adiós! Esperamos verte pronto 😃')
-
 
 def client_flow(incoming_message: str, resp: str, phone_number: str) -> None:
     '''
@@ -445,13 +425,11 @@ def client_flow(incoming_message: str, resp: str, phone_number: str) -> None:
             session['menu'] = 0
             no_reservation_found(resp)
 
-
 def no_reservation_found(resp) -> str:
     '''No reservation found'''
     resp.message(
         'Lo sentimos, no pudimos encontrar una reservación a tu nombre 😟')
     resp.message('Por favor compartenos tu número de reservación.')
-
 
 def incoming_message() -> str:
     '''
@@ -500,7 +478,6 @@ def incoming_message() -> str:
         session['reservación'] = 1
     return str(resp)
 
-
 def cancel_reservation(incoming_message: str) -> list[str]:
     '''
     Cancel reservation
@@ -540,7 +517,6 @@ def cancel_reservation(incoming_message: str) -> list[str]:
         pass
 
     return messages
-
 
 def flow_facturacion(incoming_message: str) -> str:
 

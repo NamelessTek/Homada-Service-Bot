@@ -29,6 +29,22 @@ def save_reservation() -> None:
 
     return booking
 
+def save_reservation_data_loader(req_data):
+    '''
+    Save reservation data in the database, it aks for the client data and the location data and
+    creates the booking
+    '''
+    email = req_data['email_cliente']
+    print(email)
+    create_client(req_data['nombre_cliente'],
+                  req_data['telefono_cliente'], email) if not Client.query.filter_by(email=email).first() else None
+
+    ubicacion = Ubicacion.query.filter_by(
+        ubicacion=req_data['ubicacion_cliente']).first()
+    booking = create_booking(email, ubicacion) if not Booking.query.filter_by(
+        booking_number=req_data['num_reservacion_cliente']).first() else None
+
+    return booking
 
 def create_booking(email: str, ubicacion: str) -> Booking:
     '''
