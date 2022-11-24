@@ -1,5 +1,5 @@
 from flask import current_app as app
-from homada.models import Uploads, Client, Questions
+from homada.models import Uploads, Questions, Booking
 from homada.tools.utils import delete_session, delete_session_completly
 from homada import db
 from homada.log.utils import create_log
@@ -35,23 +35,23 @@ def upload_document(file_name: str, content: bytes) -> Uploads:
     create_log(document.__class__.__name__,
                document.id, 1, session['admin_id']) if session.get('admin_id') else None
 
-    # Create Relationship between Client and Document
-    relationship_client_document(session['client_id'], document.id)
+    relationship_booking_document(getattr(Booking.query.filter_by(
+        cliente_id=session['client_id']).first(), 'id', None), document.id)
 
 
-def relationship_client_document(client_id: int, document_id: int) -> None:
+def relationship_booking_document(booking_id: int, document_id: int) -> None:
     '''
-    Create a new relationship between client and document in DB passing the client id and the document id
+    Create a new relationship between booking and document in DB passing the booking id and the document id
     '''
-    client = Client.query.filter_by(id=client_id).first()
+    booking = Booking.query.filter_by(id=booking_id).first()
     document = Uploads.query.filter_by(id=document_id).first()
 
-    if client and document:
-        document.cliente_id.append(client)
+    if booking and document:
+        document.booking_id.append(booking)
         db.session.commit()
     else:
         raise Exception(
-            'Could not create relationship between client and document')
+            'Could not create relationship between booking and document')
 
 
 def flow_facturacion(incoming_message: str) -> str:

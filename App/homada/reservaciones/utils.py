@@ -1,6 +1,6 @@
 from homada.tools.utils import delete_session_completly
 from homada import db
-from homada.models import Booking, Client, Ubicacion
+from homada.models import Booking, Client, Ubicacion, Questions
 from homada.clientes.utils import create_client
 from homada.log.utils import create_log
 from flask import session
@@ -26,7 +26,7 @@ def save_reservation() -> None:
     ubicacion = Ubicacion.query.filter_by(
         ubicacion=session['ubicacion_cliente']).first()
     booking = create_booking(email, ubicacion) if not Booking.query.filter_by(
-        booking_number=session['num_reservacion_cliente']).first() else None
+        booking_number=session['num_reservacion_cliente'], status=1).first() else None
 
     return booking
 
@@ -36,7 +36,7 @@ def create_booking(email: str, ubicacion: str) -> Booking:
     Create booking data in the database by receiving the email and the location
     '''
     query_booking = Booking.query.filter_by(
-        booking_number=session['num_reservacion_cliente']).first()
+        booking_number=session['num_reservacion_cliente'], status=1).first()
     if not query_booking:
         booking = Booking(booking_number=session['num_reservacion_cliente'], arrival=datetime.datetime.strptime(
             session['dia_llegada_cliente'], '%d-%m-%Y'), departure=datetime.datetime.strptime(

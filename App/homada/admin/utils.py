@@ -53,7 +53,7 @@ def conversations_admin(incoming_message: str) -> list[str]:
                         return messages
 
                 case 4:
-                    if not Booking.query.filter_by(booking_number=incoming_message).first():
+                    if not Booking.query.filter_by(booking_number=incoming_message, status=1).first():
                         session['num_reservacion_cliente'] = incoming_message
                     else:
                         messages.append(
