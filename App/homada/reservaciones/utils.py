@@ -1,7 +1,7 @@
 from homada import db
 from homada.models import Booking, Client, Ubicacion
 from homada.clientes.utils import create_client
-from homada.Log.utils import create_log
+from homada.log.utils import create_log
 from flask import session
 import datetime
 
@@ -55,7 +55,6 @@ def delete_reservation(booking_no: str) -> None:
     '''
     Delete reservation from database
     '''
-    reservation = Booking.query.filter_by(
-        booking_number=booking_no).first()
+    reservation = Booking.query.filter_by(booking_number=booking_no).first()
     reservation.status = False
     db.session.commit()

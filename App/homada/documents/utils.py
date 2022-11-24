@@ -1,7 +1,7 @@
 from flask import current_app as app
 from homada.models import Uploads
 from homada import db
-from homada.Log.utils import create_log
+from homada.log.utils import create_log
 from flask import session
 import os
 import secrets
@@ -16,7 +16,7 @@ def get_upload(document: str) -> Uploads:
 
 def upload_document(file_name: str, content: bytes) -> Uploads:
     '''
-    Create a new upload in DB
+    Create a new upload in DB passing the final file name and the content
     '''
 
     file_extension = os.path.splitext(file_name)

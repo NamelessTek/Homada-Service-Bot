@@ -1,6 +1,6 @@
 from homada import db
 from homada.models import Client
-from homada.Log.utils import create_log
+from homada.log.utils import create_log
 from flask import session, request
 
 

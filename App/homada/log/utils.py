@@ -4,7 +4,8 @@ from homada import db
 
 def create_log(type: str, object_id: int, action: int, admin_id: int) -> Log:
     """
-    Create log data in the database by receiving the type, object_id, action and admin_id
+    Create log data in the database by receiving the type, object_id, action and admin_id.
+    action:
     1: Create
     2: Update
     3: Delete
