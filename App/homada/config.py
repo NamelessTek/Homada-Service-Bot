@@ -23,12 +23,13 @@ class Config:
         "TWILIO_AUTH_TOKEN", '674fe0bc1d80710bfcf19a3f8dc429cd')
     TWILIO_PHONE_NUMBER = os.environ.get(
         "TWILIO_PHONE_NUMBER", 'whatsapp:+14155238886')
-    TWILIO_STUDIO_FLOW_SID = os.environ.get(
-        "TWILIO_STUDIO_FLOW_SID", "FW23fe4bb5fb61a0a3595a296e102e2ae5")
 
     # URL for uploading pdfs
     UPLOAD_FOLDER = os.environ.get(
         "UPLOAD_FOLDER", 'App/homada/static/uploads')
+    # check if the folder exists
+    if not os.path.exists(UPLOAD_FOLDER):
+        os.makedirs(UPLOAD_FOLDER)
 
     # Flask-Mail SMTP server settings
     MAIL_SERVER = os.environ.get("MAIL_SERVER", 'smtp.@gmail.com')
