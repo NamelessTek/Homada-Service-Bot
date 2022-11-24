@@ -32,6 +32,23 @@ def create_client(name: str, phone: str, email: str) -> Client:
 
     return client
 
+def create_client_carga_masiva(name: str, phone: str, email: str) -> Client:
+    '''
+    Create client data in the database by receiving the name, last name, phone and email
+    from whatsApp
+    '''
+    query_client = Client.query.filter_by(phone=phone).first()
+    if not query_client:
+        client = Client(name=name.title(), phone=phone, email=email)
+        db.session.add(client)
+        db.session.commit()
+        create_log(client.__class__.__name__,
+                   client.id, 1, 1)
+    else:
+        raise Exception('Client already exists')
+
+    return client
+
 
 def conversations_client(phone_number: str, incoming_message: str) -> list[str]:
     '''

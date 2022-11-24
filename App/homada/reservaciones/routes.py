@@ -35,18 +35,21 @@ def data_loader_booking():
                 headers_df = list(df)
                 headers_df.sort()
                 for clean_header in clean_headers: headers_df.remove(clean_header)
-                print(headers)
-                print(headers_df)
                 
-                if headers == headers_df:
-                    
-                    for header in headers:
-                        for index, row in df.iterrows():
-                            # Obtain data and saving it in request data
-                            print(row[header])
-                            if not pd.isna(header):
+            if headers == headers_df:
+                for index, row in df.iterrows():
+                    # Obtain data and saving it in request data
+                    if not pd.isna(row["nombre_cliente"]):
+                        for header in headers:
+                            if header == "telefono_cliente":
+                                number = int(row[header])
+                                req_data[header] = "+" + str(number)
+                            else:   
                                 req_data[header] = row[header]
-                    
+                            print(header)
+                            print(row[header])
+
+                if req_data:
                     data = save_reservation_data_loader(req_data)
                     if data:
                         message = {
@@ -57,12 +60,12 @@ def data_loader_booking():
                         }
                         resp = jsonify(message)
                         return resp
-                else:
-                    message = {
-                        "success": True,
-                        "code": 3,
-                        "error": False,
-                        "message": 'Formato Incorrecto, los encabezados del archivo no son los correctos.'
-                    }
-                    resp = jsonify(message)
-                    return resp
+            else:
+                message = {
+                    "success": True,
+                    "code": 3,
+                    "error": False,
+                    "message": 'Formato Incorrecto, los encabezados del archivo no son los correctos.'
+                }
+                resp = jsonify(message)
+                return resp

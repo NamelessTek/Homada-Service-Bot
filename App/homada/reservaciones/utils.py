@@ -1,7 +1,7 @@
 from homada.tools.utils import delete_session_completly
 from homada import db
 from homada.models import Booking, Client, Ubicacion, Questions
-from homada.clientes.utils import create_client
+from homada.clientes.utils import create_client, create_client_carga_masiva
 from homada.log.utils import create_log
 from flask import session
 import datetime
@@ -36,14 +36,35 @@ def save_reservation_data_loader(req_data):
     creates the booking
     '''
     email = req_data['email_cliente']
-    print(email)
-    create_client(req_data['nombre_cliente'],
-                  req_data['telefono_cliente'], email) if not Client.query.filter_by(email=email).first() else None
+    client_result = Client.query.filter_by(email=email).first()
+    if not client_result:
+        create_client_carga_masiva(req_data['nombre_cliente'],
+                  req_data['telefono_cliente'], email)
 
     ubicacion = Ubicacion.query.filter_by(
         ubicacion=req_data['ubicacion_cliente']).first()
-    booking = create_booking(email, ubicacion) if not Booking.query.filter_by(
+    booking = create_booking_data_loader(email, ubicacion,req_data) if not Booking.query.filter_by(
         booking_number=req_data['num_reservacion_cliente']).first() else None
+
+    return booking
+
+def create_booking_data_loader(email: str, ubicacion: str, req_data) -> Booking:
+    '''
+    Create booking data in the database by receiving the email and the location
+    '''
+    query_booking = Booking.query.filter_by(
+        booking_number=req_data['num_reservacion_cliente'], status=1).first()
+    if not query_booking:
+        booking = Booking(booking_number=req_data['num_reservacion_cliente'], arrival=
+            req_data['dia_llegada_cliente'], departure=
+            req_data['dia_salida_cliente'], client=Client.query.filter_by(email=email).first(), ubicacion=ubicacion,
+            arrival_time=ubicacion.arrival_time, departure_time=ubicacion.departure_time)
+        db.session.add(booking)
+        db.session.commit()
+        create_log(booking.__class__.__name__,
+                   booking.id, 1, 1)
+    else:
+        raise Exception('Booking already exists')
 
     return booking
 
