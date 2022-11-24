@@ -356,8 +356,8 @@ def review_user() -> str:
     def bold(x: str) -> str: return f"*{x}*"
 
     review_text = f'''
-{bold("-Nombre:")} {session['nombre_cliente']}
 {bold("-Teléfono:")} {session['telefono_cliente']}
+{bold("-Nombre:")} {session['nombre_cliente']}
 {bold("-Email:")} {session['email_cliente']}
 {bold("-No. Reservación:")} {session['num_reservacion_cliente']}
 {bold("-Día de llegada:")} {session['dia_llegada_cliente']}
