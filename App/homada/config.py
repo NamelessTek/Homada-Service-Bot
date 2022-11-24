@@ -36,8 +36,8 @@ class Config:
     MAIL_USE_TLS = os.environ.get("MAIL_USE_TLS", 'True')
     MAIL_USE_SSL = os.environ.get("MAIL_USE_SSL", 'True')
     MAIL_EMAIL = os.environ.get(
-        "MAIL_EMAIL", 'namelessnoreply1@gmail.com')
-    MAIL_PASSWORD = os.environ.get("MAIL_PASSWORD", 'homada2022')
+        "MAIL_EMAIL", 'namelessnoreply25@gmail.com')
+    MAIL_PASSWORD = os.environ.get("MAIL_PASSWORD", 'dpivkcsjblqscusq')
 
     if not TWILIO_ACCOUNT_SID or not TWILIO_AUTH_TOKEN or not TWILIO_PHONE_NUMBER:
         raise Exception(
