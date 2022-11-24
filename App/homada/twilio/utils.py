@@ -34,6 +34,20 @@ def validate_email(email: str) -> bool:
         return False
 
 
+def validate_location(location: str) -> bool:
+    '''
+    Validate location
+    '''
+    # use regex to validate if incoming message is a location in DB, else show answers that are similar to the incoming message
+    try:
+        location = Ubicacion.query.filter_by(
+            name=location.strip().lower()).first()
+        re.match(r"[^@]+@[^@]+\.[^@]+", location)
+        return location is not None
+    except Exception:
+        return False
+
+
 def validate_reservation_number(reservation_number: str) -> bool:
     '''
     Validate reservation number
@@ -161,7 +175,7 @@ def flow_ubicacion(client: int, booking: int, ubicacion: int) -> list:
     return messages
 
 
-def conversations_homada(incoming_message: str) -> list[str]:
+def conversations_admin(incoming_message: str) -> list[str]:
     '''
     Conversations with the homada user
     '''
@@ -170,31 +184,23 @@ def conversations_homada(incoming_message: str) -> list[str]:
     if incoming_message:
         if 'question_id' in session:
             question_id = session['question_id']
-
-            print(question_id, flush=True)
-            # Answer saved
             match question_id:
                 case 1:
-                    session['nombre_cliente'] = incoming_message
-                    print(
-                        f"Nombre del cliente {session['nombre_cliente']}", flush=True)
-
-                case 2:
                     client = Client.query.filter_by(
                         phone=incoming_message).first()
                     if not client:
                         session['telefono_cliente'] = incoming_message
-                        print(
-                            f"Nombre del cliente {session['nombre_cliente']}", flush=True)
                     else:
                         session['telefono_cliente'] = client.phone
+                        session['nombre_cliente'] = client.name
                         session['email_cliente'] = client.email
                         session['question_id'] = 3
+
+                case 2:
+                    session['nombre_cliente'] = incoming_message
                 case 3:
                     if validate_email(incoming_message):
                         session['email_cliente'] = incoming_message
-                        print(
-                            f"Email del cliente {session['email_cliente']}", flush=True)
                     else:
                         messages.append(
                             f'El correo electrónico no es válido, por favor intenta nuevamente')
@@ -205,8 +211,6 @@ def conversations_homada(incoming_message: str) -> list[str]:
                 case 4:
                     if not Booking.query.filter_by(booking_number=incoming_message).first():
                         session['num_reservacion_cliente'] = incoming_message
-                        print(
-                            f"Numero de reservación del cliente {session['num_reservacion_cliente']}", flush=True)
                     else:
                         messages.append(
                             f'El número de reservación ya existe, por favor intenta nuevamente')
@@ -217,8 +221,6 @@ def conversations_homada(incoming_message: str) -> list[str]:
                     # validate that the date is in the correct format and that it is a date that has not yet passed
                     if validate_date(incoming_message):
                         session['dia_llegada_cliente'] = incoming_message
-                        print(
-                            f"Dia de llegada del cliente {session['dia_llegada_cliente']}", flush=True)
                     else:
                         messages.append(
                             f'La fecha no es válida, por favor intenta nuevamente')
@@ -229,8 +231,6 @@ def conversations_homada(incoming_message: str) -> list[str]:
                     # validate that the date is in the corredt format and that it is a date that has not yet passed and that it is greater than the arrival date
                     if validate_date(incoming_message) and incoming_message > session['dia_llegada_cliente']:
                         session['dia_salida_cliente'] = incoming_message
-                        print(
-                            f"Dia de salida del cliente {session['dia_salida_cliente']}", flush=True)
                     else:
                         messages.append(
                             f'La fecha no es válida, por favor intenta nuevamente')
@@ -238,27 +238,19 @@ def conversations_homada(incoming_message: str) -> list[str]:
                             question_id).question)
                         return messages
                 case 7:
+
                     session['ubicacion_cliente'] = incoming_message
-                    print(
-                        f"Ubicacion del cliente {session['ubicacion_cliente']}", flush=True)
                     ubicacion_query = Ubicacion.query.filter_by(
                         ubicacion=session['ubicacion_cliente']).first()
                     session['hr_llegada_cliente'] = ubicacion_query.arrival_time
                     session['hr_salida_cliente'] = ubicacion_query.departure_time
-                    print(
-                        f"Hora de llegada del cliente {session['hr_llegada_cliente']}", flush=True)
-                    print(
-                        f"Ubiacion del cliente {session['ubicacion_cliente']}", flush=True)
                 case _:
                     pass
 
             next_id_question = int(session['question_id'])+1
-            print("Siguiente pregunta", flush=True)
             next_question = Questions.query.filter_by(
                 id=next_id_question, type_question="Reserva").first()
             if next_question:
-                print(
-                    f"Pregunta siguiente {next_question.question}", flush=True)
                 session['question_id'] = next_question.id
                 messages.append(next_question.question)
             else:
@@ -268,7 +260,6 @@ def conversations_homada(incoming_message: str) -> list[str]:
                 messages.append(review_user())
 
         elif 'revision' in session:
-            print(f"En revision\n{incoming_message}", flush=True)
             if incoming_message == "si":
                 reservation = save_reservation()
                 if not reservation:
@@ -283,9 +274,7 @@ def conversations_homada(incoming_message: str) -> list[str]:
                     "De acuerdo, vamos a empezar de nuevo o si prefieres puedes escribir la palabra 'salir' para terminar la conversación")
                 messages.append(redirect_to_first_question())
         else:
-            print("Primera pregunta", flush=True)
             pregunta = redirect_to_first_question()
-            print("Pregunta " + pregunta, flush=True)
             messages.append(pregunta)
     else:
         pass
@@ -341,7 +330,11 @@ def redirect_to_first_question() -> str:
 
 def font_weight(style: str, text: str) -> None:
     '''
-    Return the text with the style
+    Return the text with:
+    style: 
+    - bold
+    - italic
+    - underline
     '''
     match style:
         case "bold":
@@ -498,7 +491,7 @@ def incoming_message() -> str:
                 if 'revision' not in session:
                     welcome_homada(resp)
 
-            for message in conversations_homada(incoming_message):
+            for message in conversations_admin(incoming_message):
                 resp.message(message)
     else:
         no_reservation_found(resp)
@@ -558,8 +551,8 @@ def flow_facturacion(media_url: str, incoming_message: str) -> str:
                     r = requests.get(media_url)
                     content_type = r.headers['content-type']
                     if content_type == 'application/pdf':
-                        session['document'] = r.headers['content-disposition'].split('=')[
-                            1].replace('"', '').replace('+', ' ').replace('%3F', '')
+                        session['document'] = r.headers['content-disposition'].split(
+                            '=')[1].replace('"', '').replace('+', ' ').replace('%3F', '')
                         print(f'El documento es: {session["document"]}')
                         session['content'] = r.content
                         session['review_upload'] = True

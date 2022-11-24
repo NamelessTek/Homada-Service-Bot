@@ -24,11 +24,11 @@ INSERT INTO
     )
 VALUES (
         1,
-        '¿Cuál es el nombre del cliente?',
+        '¿Cuál es el teléfono del cliente?',
         'Reserva'
     ), (
         2,
-        '¿Cuál es el teléfono del cliente?',
+        '¿Cuál es el nombre del cliente?',
         'Reserva'
     ), (
         3,
