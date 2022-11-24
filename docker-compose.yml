@@ -10,7 +10,7 @@ services:
     environment:
       MYSQL_ROOT_PASSWORD: homada
       MYSQL_PASSWORD: homada
-      MYSQL_DATABASE: homada_db
+      MYSQL_DATABASE: Homada_DB
       MYSQL_USER: generic_operator
     command: --default-authentication-plugin=mysql_native_password --bind-address=0.0.0.0 --explicit_defaults_for_timestamp
     volumes:
@@ -28,13 +28,14 @@ services:
     networks:
       - app-tier
   api:
+    container_name: homada_api
     stdin_open: true
     tty: true
     restart: always
     build: .
     ports:
-      - 5000:5000
+      - 5555:5000
     volumes:
-      - ./App:/homada/App
+      - ./App:/homada_bot/App
     networks:
       - app-tier
