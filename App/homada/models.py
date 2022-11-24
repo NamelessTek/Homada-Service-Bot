@@ -122,13 +122,9 @@ class Client(db.Model):
     last_update: str = db.Column(
         db.TIMESTAMP, nullable=False, default=datetime.now, onupdate=datetime.now)
 
-    # child relationship
+    # Foreign key relationship
     bookings = db.relationship(
         'Booking', backref='client', lazy='dynamic')
-
-    # document_id = db.relationship('Upload',
-    #                               secondary=Relation_client_document_table,
-    #                               backref=db.backref('document_id', lazy='dynamic'))
 
     def get_data(self) -> dict:
         return {column.name: getattr(self, column.name) for column in self.__table__.columns}
@@ -161,6 +157,10 @@ class Booking(db.Model):
         db.TIMESTAMP, nullable=False, default=datetime.now, onupdate=datetime.now)
     status: bool = db.Column(db.Integer, nullable=False, default=True)
 
+    # Foreign key relationship
+    uploads = db.relationship('Uploads', secondary=Relation_booking_document_table,
+                              backref='upload_id', lazy='dynamic', viewonly=True)
+
     def get_data(self) -> dict:
         return {column.name: getattr(self, column.name) for column in self.__table__.columns}
 
@@ -185,9 +185,9 @@ class Uploads(db.Model):
         db.TIMESTAMP, nullable=False, default=datetime.now, onupdate=datetime.now)
 
     # Foreign Keys
-    cliente_id: int = db.relationship('Client',
-                                      secondary=Relation_client_document_table,
-                                      backref=db.backref('cliente_id', lazy='dynamic'))
+    booking_id: int = db.relationship('Booking',
+                                      secondary=Relation_booking_document_table,
+                                      backref=db.backref('booking_id', lazy='dynamic'))
 
     def get_data(self) -> dict:
         return {column.name: getattr(self, column.name) for column in self.__table__.columns}
