@@ -1,10 +1,12 @@
 from homada import db
 from homada.models import Client
+from homada.Log.utils import create_log
+from flask import session, request
 
 
 def get_client(client: Client) -> dict:
     '''
-    Get client data
+    Get client data with a client object type
     '''
     return Client.get_data(Client.query.filter_by(phone=client).first())
 
@@ -17,9 +19,11 @@ def create_client(name: str, phone: str, email: str) -> Client:
     query_client = Client.query.filter_by(phone=phone).first()
     if not query_client:
 
-        client = Client(name=name, phone=phone, email=email)
+        client = Client(name=name.title(), phone=phone, email=email)
         db.session.add(client)
         db.session.commit()
+        create_log(client.__class__.__name__,
+                   client.id, 1, session['admin_id'])
     else:
         raise Exception('Client already exists')
 

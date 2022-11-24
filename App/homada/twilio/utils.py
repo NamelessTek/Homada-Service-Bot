@@ -2,7 +2,6 @@ from homada.config import Config
 from twilio.rest import Client as TwilioClient
 from homada.models import Ubicacion, Client, Booking, Questions, Admin
 from homada.reservaciones.utils import save_reservation, delete_reservation
-from homada.Log.utils import create_log
 from homada.documents.utils import upload_document
 from homada.email.utils import send_email
 from twilio.twiml.messaging_response import MessagingResponse

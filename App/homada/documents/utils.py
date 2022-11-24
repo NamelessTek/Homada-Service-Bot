@@ -1,6 +1,8 @@
 from flask import current_app as app
 from homada.models import Uploads
 from homada import db
+from homada.Log.utils import create_log
+from flask import session
 import os
 import secrets
 
@@ -22,6 +24,9 @@ def upload_document(file_name: str, content: bytes) -> Uploads:
     upload_url = os.path.join(app.config['UPLOAD_FOLDER'], file_fn)
     with open(upload_url, 'wb') as file:
         file.write(content)
-
-    db.session.add(Uploads(url=upload_url,  document=file_fn))
+    document = Uploads(url=upload_url,  document=file_fn)
+    db.session.add(document)
     db.session.commit()
+
+    create_log(document.__class__.__name__,
+               document.id, 1, session['admin_id'])

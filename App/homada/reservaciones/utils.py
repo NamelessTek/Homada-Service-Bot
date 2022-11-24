@@ -1,6 +1,7 @@
 from homada import db
 from homada.models import Booking, Client, Ubicacion
 from homada.clientes.utils import create_client
+from homada.Log.utils import create_log
 from flask import session
 import datetime
 
@@ -42,6 +43,8 @@ def create_booking(email: str, ubicacion: str) -> Booking:
             arrival_time=ubicacion.arrival_time, departure_time=ubicacion.departure_time)
         db.session.add(booking)
         db.session.commit()
+        create_log(booking.__class__.__name__,
+                   booking.id, 1, session['admin_id'])
     else:
         raise Exception('Booking already exists')
 
