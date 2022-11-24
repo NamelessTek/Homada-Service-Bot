@@ -78,9 +78,8 @@ def conversations_client(phone_number: str, incoming_message: str) -> list[str]:
     Conversations with the user
     '''
     messages: list[str] = []
-
+    print(incoming_message)
     client = Client.query.filter_by(phone=phone_number).first()
-
     if not client:
         booking = Booking.query.filter_by(
             booking_number=session['reservación'], status=1).first()
@@ -91,13 +90,17 @@ def conversations_client(phone_number: str, incoming_message: str) -> list[str]:
             cliente_id=client.id, status=1).first()
         ubicacion = Ubicacion.query.filter_by(
             id=booking.ubicacion_id).first() if booking else None
+    if "factura" in session:
+        for message in flow_facturacion(incoming_message):
+            messages.append(message)
+        incoming_message = None
     if incoming_message:
         match incoming_message:
             case "1":
                 for message in flow_ubicacion(client, booking, ubicacion):
                     messages.append(message)
             case "2":
-                for message in flow_facturacion(client, booking, ubicacion):
+                for message in flow_facturacion(incoming_message):
                     messages.append(message)
             case "3":
                 for message in flow_network(client, booking, ubicacion):
@@ -107,7 +110,7 @@ def conversations_client(phone_number: str, incoming_message: str) -> list[str]:
                     f'No pude entender tu respuesta 😟 Inténtalo nuevamente 👇🏼 o escribe menu para desplegar las opciones con las que podemos apoyarte.')
     else:
         pass
-
+    # print(session)
     return messages
 
 
@@ -460,7 +463,6 @@ def incoming_message() -> str:
     phone_number = request.values.get('From', None).replace('whatsapp:', '')
     # Get the document of the person sending the text message
 
-    media_url = request.form.get('MediaUrl0', None)
     resp = MessagingResponse()
     admin = Admin.query.filter_by(phone=phone_number).first()
     session['admin_id'] = admin.id
@@ -484,7 +486,7 @@ def incoming_message() -> str:
             for message in cancel_reservation(incoming_message):
                 resp.message(message)
         elif incoming_message == 'factura' or 'factura' in session:
-            for message in flow_facturacion(media_url, incoming_message):
+            for message in flow_facturacion(incoming_message):
                 resp.message(message)
         else:
             if 'question_id' not in session and 'revision' not in session:
@@ -540,8 +542,8 @@ def cancel_reservation(incoming_message: str) -> list[str]:
     return messages
 
 
-def flow_facturacion(media_url: str, incoming_message: str) -> str:
-    session['factura'] = True
+def flow_facturacion(incoming_message: str) -> str:
+
     messages: list[str] = []
     if 'question_id' in session:
         match session['question_id']:
@@ -551,9 +553,9 @@ def flow_facturacion(media_url: str, incoming_message: str) -> str:
                     r = requests.get(media_url)
                     content_type = r.headers['content-type']
                     if content_type == 'application/pdf':
-                        session['document'] = r.headers['content-disposition'].split(
-                            '=')[1].replace('"', '').replace('+', ' ').replace('%3F', '')
-                        print(f'El documento es: {session["document"]}')
+                        session['document'] = r.headers['content-disposition'].split('=')[
+                            1].replace('"', '').replace('+', ' ').replace('%3F', '')
+                        #print(f'El documento es: {session["document"]}')
                         session['content'] = r.content
                         session['review_upload'] = True
                     else:
@@ -583,9 +585,10 @@ def flow_facturacion(media_url: str, incoming_message: str) -> str:
         elif incoming_message == 'no':
             messages.append('Documento no subido')
     else:
+        delete_session()
         question = Questions.query.filter_by(
             id=9, type_question="Upload").first()
         messages.append(question.question)
         session['question_id'] = question.id
-
+    session['factura'] = True
     return messages
