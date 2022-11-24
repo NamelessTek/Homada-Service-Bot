@@ -122,13 +122,12 @@ class Client(db.Model):
     last_update: str = db.Column(
         db.TIMESTAMP, nullable=False, default=datetime.now, onupdate=datetime.now)
 
-    # child relationship
+    # Foreign key relationship
     bookings = db.relationship(
         'Booking', backref='client', lazy='dynamic')
 
-    # document_id = db.relationship('Upload',
-    #                               secondary=Relation_client_document_table,
-    #                               backref=db.backref('document_id', lazy='dynamic'))
+    uploads = db.relationship('Uploads', secondary=Relation_client_document_table,
+                              backref='upload_id', lazy='dynamic', viewonly=True)
 
     def get_data(self) -> dict:
         return {column.name: getattr(self, column.name) for column in self.__table__.columns}

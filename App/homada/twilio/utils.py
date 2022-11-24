@@ -465,9 +465,11 @@ def incoming_message() -> str:
     # Get the document of the person sending the text message
 
     resp = MessagingResponse()
-    admin = Admin.query.filter_by(phone=phone_number).first()
+    admin = Admin.query.filter_by(phone=phone_number, status=1).first()
     if not admin:
         # Client conversation
+        session['client_id'] = getattr(Client.query.filter_by(
+            phone=phone_number).first(), 'id', None)
         if incoming_message == "salir" or incoming_message == "adios" or incoming_message == "gracias":
             delete_session_completly()
             goodbye_client(resp)
@@ -477,6 +479,7 @@ def incoming_message() -> str:
             no_reservation_found(resp)
             session['reservación'] = 1
     elif phone_number == admin.phone:
+        # Admin conversation
         session['admin_id'] = admin.id
         if incoming_message == "salir" or incoming_message == "adios" or incoming_message == "gracias":
             delete_session_completly()
@@ -523,7 +526,7 @@ def cancel_reservation(incoming_message: str) -> list[str]:
 
         elif 'review_cancel' in session:
             if incoming_message == 'si':
-                # delete the reservation from the database with the booking numberç
+                # delete the reservation from the database with the booking number
                 delete_reservation(session['booking_no'])
                 messages.append(f'Reservación cancelada')
                 delete_session_completly()
@@ -554,7 +557,6 @@ def flow_facturacion(incoming_message: str) -> str:
                     if content_type == 'application/pdf':
                         session['document'] = r.headers['content-disposition'].split('=')[
                             1].replace('"', '').replace('+', ' ').replace('%3F', '')
-                        #print(f'El documento es: {session["document"]}')
                         session['content'] = r.content
                         session['review_upload'] = True
                     else:
@@ -578,7 +580,7 @@ def flow_facturacion(incoming_message: str) -> str:
         if incoming_message == 'si':
             upload_document(session['document'].replace(
                 ' ', '_'), session['content'])
-            send_email("luisitocedillo@gmail.com")
+            # send_email("luisitocedillo@gmail.com")
             messages.append(f'Gracias por subir tu factura')
             delete_session_completly()
         elif incoming_message == 'no':
