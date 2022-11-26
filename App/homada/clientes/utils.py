@@ -245,3 +245,11 @@ def goodbye_client(resp) -> None:
     Sends a goodbye message to the client
     '''
     resp.message(f'¡Adiós! Esperamos verte pronto 😃')
+
+
+def welcome_client(resp) -> None:
+    '''
+    Sends a welcome message to the client
+    '''
+    resp.message(
+        f'¡Hola {getattr(Client.query.filter_by(id=session["client_id"]).first(), "name", "")}! Bienvenido a Homada, para comenzar por favor escribe la palabra {font_weight("bold", "menú")} para ver las opciones disponibles 😊')

@@ -6,12 +6,12 @@ from flask import session
 
 
 def get_admin(admin: str) -> dict:
-    # return all the columns of the admin table
+    '''return all the columns of the admin table'''
     return Admin.__repr__(Admin.query.filter_by(phone=admin).first())
 
 
 def get_admin_phones() -> list:
-    # return phones of all admins
+    '''return phones of all admins'''
     phones = []
     admins = Admin.query.all()
     for admin in admins:
@@ -127,6 +127,7 @@ def conversations_admin(incoming_message: str) -> list[str]:
 
 
 def goodbye_admin() -> str:
+    '''Goodbye message'''
     goodbye = f"Ya quedó creada la reservación {session['num_reservacion_cliente']} :)"
     delete_session()
     return goodbye

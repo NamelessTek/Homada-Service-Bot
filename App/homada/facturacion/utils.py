@@ -1,6 +1,7 @@
 from flask import current_app as app
-from homada.models import Uploads, Questions, Booking
-from homada.tools.utils import delete_session, delete_session_completly
+from homada.models import Uploads, Questions, Booking, Client
+from homada.tools.utils import delete_session, delete_session_completly, validate_email
+from homada.email.utils import send_email
 from homada import db
 from homada.log.utils import create_log
 from flask import session, request
@@ -78,28 +79,73 @@ def flow_facturacion(incoming_message: str) -> str:
                 else:
                     messages.append(
                         f'Lo sentimos, no pudimos recibir tu factura 😟')
+            case 10:
+                if validate_email(incoming_message):
+                    session['email_cliente'] = incoming_message
+                    session['review_client_email'] = True
+                    # confirmed_doc(messages)
+                else:
+                    messages.append("El correo electrónico no es válido 😟")
+                    messages.append(
+                        Questions.query.filter_by(id=10, type_question="Factura").first().question)
+                    return messages
             case _:
-                pass
+                delete_session_completly()
 
         if 'question_id' in session:
             del session['question_id']
-        messages.append(
-            f'¿Estás seguro que deseas subir el documento {session["document"]}?')
 
-    elif 'review_upload' in session:
+        if session.get('review_upload'):
+            messages.append(
+                f'¿Estás seguro que deseas subir el documento {session["document"]}? si/no')
+        if session.get('review_client_email'):
+            messages.append(
+                f'¿Estás seguro que deseas subir el documento {session["email_cliente"]}? si/no')
+
+    elif 'review_upload' in session and session['review_upload']:
         if incoming_message == 'si':
-            upload_document(session['document'].replace(
-                ' ', '_'), session['content'])
-            # send_email("luisitocedillo@gmail.com")
-            messages.append(f'Gracias por subir tu factura')
-            delete_session_completly()
+            session['review_client_email'] = True
+            session['review_upload'] = False
+            messages.append(
+                f'Se enviará la factura con el correo {getattr(Client.query.filter_by(id=session["client_id"]).first(), "email", None)}, ¿es correcto? si/no')
         elif incoming_message == 'no':
             messages.append('Documento no subido')
+            delete_session_completly()
+        else:
+            messages.append(
+                f'De acuerdo, en caso de necesitar ayuda escribe la palabra menú')
+            delete_session_completly()
+    elif 'review_client_email' in session and session['review_client_email']:
+        if incoming_message == 'si':
+            confirmed_doc(messages)
+            send_email()
+            delete_session_completly()
+        elif incoming_message == 'no':
+            messages.append(Questions.query.filter_by(
+                id=10, type_question="Factura").first().question)
+            session['question_id'] = 10
+            session['review_client_email'] = False
+            return messages
+        else:
+            messages.append(
+                f'Lo sentimos, no pudimos recibir tu factura 😟')
+            delete_session_completly()
+
     else:
         delete_session()
-        question = Questions.query.filter_by(
-            id=9, type_question="Upload").first()
-        messages.append(question.question)
-        session['question_id'] = question.id
-    session['factura'] = True
+        initialize_facturacion_l(messages)
     return messages
+
+
+def confirmed_doc(messages: str) -> None:
+    upload_document(session['document'], session['content'])
+    messages.append(
+        'Muchas gracias, tu factura ha sido recibida y nos pondremos en contacto contigo 😊👌')
+
+
+def initialize_facturacion_l(messages: str) -> None:
+    question = getattr(Questions.query.filter_by(
+        id=9, type_question="Factura").first(), 'question', None)
+    session['question_id'] = 9
+    messages.append(question)
+    session['factura'] = True
