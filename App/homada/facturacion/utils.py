@@ -1,6 +1,7 @@
 from flask import current_app as app
 from homada.models import Uploads, Questions, Booking, Client
 from homada.tools.utils import delete_session, delete_session_completly, validate_email
+from homada.email.utils import send_email
 from homada import db
 from homada.log.utils import create_log
 from flask import session, request
@@ -117,6 +118,7 @@ def flow_facturacion(incoming_message: str) -> str:
     elif 'review_client_email' in session and session['review_client_email']:
         if incoming_message == 'si':
             confirmed_doc(messages)
+            send_email()
             delete_session_completly()
         elif incoming_message == 'no':
             messages.append(Questions.query.filter_by(
