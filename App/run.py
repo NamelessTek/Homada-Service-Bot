@@ -12,7 +12,6 @@ from flask_admin.contrib.sqla import ModelView
 app = create_app()
 admin = Admin(app)
 
-
 class ModifiedView(ModelView):
     form_excluded_columns = ['bookings',
                              'creation_date', 'last_update', 'status']

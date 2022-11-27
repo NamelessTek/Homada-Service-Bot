@@ -19,7 +19,6 @@ login_manager.login_message_category = 'info'
 client = Client(Config.TWILIO_ACCOUNT_SID, Config.TWILIO_AUTH_TOKEN)
 mail = Mail()
 
-
 @login_manager.user_loader
 def create_app(config_class=Config):
     app = Flask(__name__)
@@ -28,7 +27,7 @@ def create_app(config_class=Config):
     app.config.from_object(Config)
     Session(app)
     CORS(app)
-
+    
     #CORS(app, resources={r"/*": {"origins": "*"}})
     db.init_app(app)
     bcrypt.init_app(app)
