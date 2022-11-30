@@ -56,6 +56,10 @@ VALUES (
         'Cancelacion'
     ), (
         9,
-        'Por favor envíe el documento a dar de alta',
-        'Upload'
+        'Por favor envíe tu constancia fiscal en formato pdf.',
+        'Factura'
+    ), (
+        10,
+        'Ingrese el correo electrónico al que desee recibir la factura',
+        'Factura'
     );

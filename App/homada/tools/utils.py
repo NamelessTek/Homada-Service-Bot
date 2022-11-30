@@ -17,7 +17,7 @@ def delete_session() -> None:
     '''
     Delete the keys in the session dictionary
     '''
-    for key in ['question_id', 'revision', 'nombre_cliente', 'telefono_cliente', 'email_cliente', 'num_reservacion_cliente', 'dia_llegada_cliente', 'dia_salida_cliente', 'ubicacion_cliente', 'hr_llegada_cliente', 'hr_salida_cliente']:
+    for key in ['document','question_id', 'revision', 'nombre_cliente', 'telefono_cliente', 'email_cliente', 'num_reservacion_cliente', 'dia_llegada_cliente', 'dia_salida_cliente', 'ubicacion_cliente', 'hr_llegada_cliente', 'hr_salida_cliente']:
         if key in session:
             del session[key]
 

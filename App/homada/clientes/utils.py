@@ -67,7 +67,7 @@ def conversations_client(phone_number: str, incoming_message: str) -> list[str]:
         ubicacion = Ubicacion.query.filter_by(
             id=booking.ubicacion_id).first() if booking else None
     if "factura" in session:
-        for message in flow_facturacion(incoming_message):
+        for message in flow_facturacion(incoming_message,booking):
             messages.append(message)
         incoming_message = None
     if incoming_message:
@@ -76,7 +76,7 @@ def conversations_client(phone_number: str, incoming_message: str) -> list[str]:
                 for message in flow_ubicacion(client, booking, ubicacion):
                     messages.append(message)
             case "2":
-                for message in flow_facturacion(incoming_message):
+                for message in flow_facturacion(incoming_message,booking):
                     messages.append(message)
             case "3":
                 for message in flow_network(client, booking, ubicacion):
@@ -245,3 +245,11 @@ def goodbye_client(resp) -> None:
     Sends a goodbye message to the client
     '''
     resp.message(f'¡Adiós! Esperamos verte pronto 😃')
+
+
+def welcome_client(resp) -> None:
+    '''
+    Sends a welcome message to the client
+    '''
+    resp.message(
+        f'¡Hola {getattr(Client.query.filter_by(id=session["client_id"]).first(), "name", "")}! Bienvenido a Homada, para comenzar por favor escribe la palabra {font_weight("bold", "menú")} para ver las opciones disponibles 😊')
