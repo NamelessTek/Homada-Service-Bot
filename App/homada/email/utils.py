@@ -20,7 +20,7 @@ def send_email(booking: str, email: str) -> None:
     client = booking.client
     ubicacion = booking.ubicacion
     mail['From'] = Config.MAIL_EMAIL
-    mail['To'] = "luisitocedillo@gmail.com"
+    mail['To'] = email
     mail['Subject'] = f'''Factura de número de reservación {booking.booking_number}'''
     mail.add_header('Content-Type', 'text/html',)
 
@@ -28,6 +28,9 @@ def send_email(booking: str, email: str) -> None:
     <html>
     <head>
     <style>
+
+
+    
     table {{
         font-family: arial, sans-serif;
         border-collapse: collapse;
@@ -47,6 +50,9 @@ def send_email(booking: str, email: str) -> None:
     </head>
     <body>
 
+    <h2>Hola equipo Homada!</h2>
+
+    El cliente Luis con el número de reservación 1234 ha solicitado su factura. Te anexamos su constancia fiscal, y este es su contacto.
 
     <table>
         <tr>
