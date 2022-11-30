@@ -5,51 +5,81 @@ from homada.models import Client, Booking, Ubicacion
 from homada import mail
 from smtplib import SMTPException
 from email.message import EmailMessage
+from email.mime.text import MIMEText
 from flask import session
 import ssl
 import smtplib
 import os
 
 
-def send_email(booking) -> None:
-    em = EmailMessage()
+def send_email(booking: str, email: str) -> None:
+    '''
+    Send email to client with the booking, it attaches the last pdf generated
+    '''
+    mail = EmailMessage()
     client = booking.client
     ubicacion = booking.ubicacion
-    body = f''' Hola equipo Homada!
+    mail['From'] = Config.MAIL_EMAIL
+    mail['To'] = "luisitocedillo@gmail.com"
+    mail['Subject'] = f'''Factura de número de reservación {booking.booking_number}'''
+    mail.add_header('Content-Type', 'text/html',)
 
-El cliente {client.name} con el número de reservación {booking.booking_number} ha solicitado su factura. Te anexamos su constancia fiscal, y este es su contacto.
+    html = (f'''
+    <html>
+    <head>
+    <style>
+    table {{
+        font-family: arial, sans-serif;
+        border-collapse: collapse;
+        width: 100%;
+    }}
 
-Nombre {client.name}
-Número de reservación {booking.booking_number}
-Teléfono {client.phone}
-Email {client.email}
-Ubicación {ubicacion.ubicacion}
+    td, th {{
+        border: 1px solid #dddddd;
+        text-align: left;
+        padding: 8px;
+    }}
+
+    tr:nth-child(even) {{
+        background-color: #dddddd;
+    }}
+    </style>
+    </head>
+    <body>
 
 
-Saludos
-    '''
-    print('Ruta!!')
-    file_fn = session['constancia']
-    print(file_fn)
-    upload_url = os.path.join(app.config['UPLOAD_FOLDER'], file_fn)
-    print(upload_url)
-    name_file = "Constancia_Fiscal_"+str({booking.booking_number})+".pdf"
-    with open(upload_url, 'rb') as content_file:
-        content = content_file.read()
-        em.add_attachment(content, maintype='application', subtype='pdf', filename=name_file)
-    
-    mail = Config.MAIL_EMAIL
-    em['From'] = mail
-    em['To'] = "gomezrbz@gmail.com"
-    em['Subject'] = f'''Factura de número de reservación {booking.booking_number}'''
-    em.set_content(body)
+    <table>
+        <tr>
+            <th>Nombre</th>
+            <th>Correo electrónico</th>
+            <th>Teléfono</th>
+            <th>Ubicación</th>
+        </tr>
+        <tr>
+            <td>{client.name}</td>
+            <td>{client.email}</td>
+            <td>{client.phone}</td>
+            <td>{ubicacion.ubicacion}</td>
+        </tr>
+    </table>
 
-    context = ssl.create_default_context()
+    </body>
+    </html>''')
+    mail.set_payload(html)
 
-    with smtplib.SMTP_SSL('smtp.gmail.com', Config.MAIL_PORT, context=context) as smtp:
-        smtp.login(mail, Config.MAIL_PASSWORD)
+    upload_url = os.path.join(
+        app.config['UPLOAD_FOLDER'], session['constancia'])
+    name_file = f"Constancia_Fiscal_{str(booking.booking_number)}.pdf"
+    mail.add_attachment(open(upload_url, 'rb').read(), maintype='application',
+                        subtype='octet-stream', filename=name_file)
 
-        smtp.sendmail(mail,
-                      "gomezrbz@gmail.com", em.as_string())
+    try:
+        with smtplib.SMTP_SSL('smtp.gmail.com', Config.MAIL_PORT, context=ssl.create_default_context()) as smtp:
+            smtp.login(mail['From'], Config.MAIL_PASSWORD)
+            smtp.sendmail(mail['From'], mail['To'],
+                          mail.as_string().encode('utf-8'))
+            smtp.quit()
 
-    return "sent"
+        print('Email sent!')
+    except SMTPException as e:
+        print('Error sending email: ', e)

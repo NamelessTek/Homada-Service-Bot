@@ -23,43 +23,43 @@ def incoming_message() -> str:
     admin = Admin.query.filter_by(phone=phone_number, status=1).first()
     if not admin:
         # Client conversation
-        
+
         client = Client.query.filter_by(phone=phone_number).first()
         if client:
             session['client_id'] = getattr(Client.query.filter_by(
                 phone=phone_number).first(), 'id', None)
-        elif'reservación' in session:
-            booking = Booking.query.filter_by(
+            if 'reservación' in session:
+                booking = Booking.query.filter_by(
                     booking_number=session['reservación'], status=1).first()
-            
-            session['client_id'] = getattr(Client.query.filter_by(
-            id=booking.cliente_id).first(), 'id', None)
-        
-        elif not session.get('client_id'):
+
+                session['client_id'] = getattr(Client.query.filter_by(
+                    id=booking.cliente_id).first(), 'id', None)
+            else:
+                if incoming_message == "salir" or incoming_message == "adios" or incoming_message == "gracias":
+                    delete_session_completly()
+                    goodbye_client(resp)
+                elif incoming_message == "menú" or "menú" in session or incoming_message == "menu":
+                    client_flow(incoming_message, resp, phone_number)
+                else:
+                    welcome_client(resp)
+        else:
+            print('No client')
             no_reservation_found(resp)
             session['reservación'] = 1
-        else:
-            if incoming_message == "salir" or incoming_message == "adios" or incoming_message == "gracias":
-                delete_session_completly()
-                goodbye_client(resp)
-            elif incoming_message == "menú" or "menú" in session or incoming_message == "menu":
-                client_flow(incoming_message, resp, phone_number)
-            else:
-                welcome_client(resp)
     elif phone_number == admin.phone:
         # Admin conversation
         session['admin_id'] = admin.id
         client = Client.query.filter_by(phone=phone_number).first()
         if client:
             session['client_id'] = getattr(Client.query.filter_by(
-            phone=phone_number).first(), 'id', None)
-        elif'reservación' in session:
+                phone=phone_number).first(), 'id', None)
+        elif 'reservación' in session:
             booking = Booking.query.filter_by(
-                    booking_number=session['reservación'], status=1).first()
-            
+                booking_number=session['reservación'], status=1).first()
+
             session['client_id'] = getattr(Client.query.filter_by(
-            id=booking.cliente_id).first(), 'id', None)
-            
+                id=booking.cliente_id).first(), 'id', None)
+
         if incoming_message == "salir" or incoming_message == "adios" or incoming_message == "gracias":
             delete_session_completly()
             goodbye_client(resp)

@@ -82,8 +82,8 @@ def flow_facturacion(incoming_message: str, booking) -> str:
             case 10:
                 if validate_email(incoming_message):
                     session['email_cliente'] = incoming_message
+                    print(session['email_cliente'])
                     session['review_client_email'] = True
-                    # confirmed_doc(messages)
                 else:
                     messages.append("El correo electrónico no es válido 😟")
                     messages.append(
@@ -118,7 +118,8 @@ def flow_facturacion(incoming_message: str, booking) -> str:
     elif 'review_client_email' in session and session['review_client_email']:
         if incoming_message == 'si':
             confirmed_doc(messages)
-            send_email(booking)
+            send_email(booking, getattr(Client.query.filter_by(
+                id=session["client_id"]).first(), "email", None))
             delete_session_completly()
         elif incoming_message == 'no':
             messages.append(Questions.query.filter_by(
@@ -133,7 +134,7 @@ def flow_facturacion(incoming_message: str, booking) -> str:
 
     else:
         delete_session()
-        initialize_facturacion_l(messages)
+        initialize_facturacion(messages)
     return messages
 
 
@@ -143,7 +144,7 @@ def confirmed_doc(messages: str) -> None:
         'Muchas gracias, tu información ha sido recibida y nos pondremos en contacto contigo 😊👌')
 
 
-def initialize_facturacion_l(messages: str) -> None:
+def initialize_facturacion(messages: str) -> None:
     question = getattr(Questions.query.filter_by(
         id=9, type_question="Factura").first(), 'question', None)
     session['question_id'] = 9

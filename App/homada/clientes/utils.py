@@ -32,6 +32,7 @@ def create_client(name: str, phone: str, email: str) -> Client:
 
     return client
 
+
 def create_client_carga_masiva(name: str, phone: str, email: str) -> Client:
     '''
     Create client data in the database by receiving the name, last name, phone and email
@@ -39,11 +40,7 @@ def create_client_carga_masiva(name: str, phone: str, email: str) -> Client:
     '''
     query_client = Client.query.filter_by(phone=phone).first()
     if not query_client:
-        client = Client(name=name.title(), phone=phone, email=email)
-        db.session.add(client)
-        db.session.commit()
-        create_log(client.__class__.__name__,
-                   client.id, 1, 1)
+        client = create_client(name, phone, email)
     else:
         raise Exception('Client already exists')
 
@@ -67,7 +64,7 @@ def conversations_client(phone_number: str, incoming_message: str) -> list[str]:
         ubicacion = Ubicacion.query.filter_by(
             id=booking.ubicacion_id).first() if booking else None
     if "factura" in session:
-        for message in flow_facturacion(incoming_message,booking):
+        for message in flow_facturacion(incoming_message, booking):
             messages.append(message)
         incoming_message = None
     if incoming_message:
@@ -76,7 +73,7 @@ def conversations_client(phone_number: str, incoming_message: str) -> list[str]:
                 for message in flow_ubicacion(client, booking, ubicacion):
                     messages.append(message)
             case "2":
-                for message in flow_facturacion(incoming_message,booking):
+                for message in flow_facturacion(incoming_message, booking):
                     messages.append(message)
             case "3":
                 for message in flow_network(client, booking, ubicacion):
@@ -165,9 +162,9 @@ def flow_ubicacion(client: int, booking: int, ubicacion: int) -> list:
         messages = [f'¡Hola {client.name}!, muchas gracias por tu preferencia']
         if booking:
             messages.extend(
-                [f'{client.name}, para tu entrada el día {booking.arrival.strftime("%d/%m/%Y")}, queremos compartirte algunos datos. ',
-                 f'Para tu facilidad, el link de navegación es el siguiente: {ubicacion.url}.',
-                 'En caso de necesitar apoyo por favor escribe en el chat la palabra "menú"'])
+                [f'{client.name}, para tu entrada el día {font_weight("bold", booking.arrival.strftime("%d/%m/%Y"))}, queremos compartirte algunos datos. ',
+                 f'Para tu facilidad, el link de navegación es el siguiente: {font_weight("bold",ubicacion.url)}.',
+                 f'En caso de necesitar apoyo por favor escribe en el chat la palabra {font_weight("bold","menú")}'])
             delete_session() if 'menú' in session else None
         else:
             messages.append(
@@ -176,9 +173,9 @@ def flow_ubicacion(client: int, booking: int, ubicacion: int) -> list:
         messages = [f'¡Hola!, muchas gracias por tu preferencia']
         if booking:
             messages.extend(
-                [f'Para tu entrada el día {booking.arrival.strftime("%d/%m/%Y")}, queremos compartirte algunos datos. ',
-                 f'Para tu facilidad, el link de navegación es el siguiente: {ubicacion.url}.',
-                 'En caso de necesitar apoyo por favor escribe en el chat la palabra "menú"'])
+                [f'{client.name}, para tu entrada el día {font_weight("bold", booking.arrival.strftime("%d/%m/%Y"))}, queremos compartirte algunos datos. ',
+                 f'Para tu facilidad, el link de navegación es el siguiente: {font_weight("bold",ubicacion.url)}.',
+                 f'En caso de necesitar apoyo por favor escribe en el chat la palabra {font_weight("bold","menú")}'])
             delete_session() if 'menú' in session else None
         else:
             messages.append(
