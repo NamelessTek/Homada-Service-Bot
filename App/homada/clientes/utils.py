@@ -215,7 +215,7 @@ def review_client() -> str:
     review_text = f'''
 {bold("-Teléfono:")} {session['telefono_cliente']}
 {bold("-Nombre:")} {session['nombre_cliente']}
-{bold("-Email:")} {session['email_cliente']}
+{bold("-Email:")} {session['email_cliente'] if session['email_cliente'] else "No proporcionado"}
 {bold("-No. Reservación:")} {session['num_reservacion_cliente']}
 {bold("-Día de llegada:")} {session['dia_llegada_cliente']}
 {bold("-Día de salida:")} {session['dia_salida_cliente']}
