@@ -45,6 +45,8 @@ def conversations_admin(incoming_message: str) -> list[str]:
                 case 3:
                     if validate_email(incoming_message):
                         session['email_cliente'] = incoming_message
+                    elif incoming_message == 'no':
+                        session['email_cliente'] = None
                     else:
                         messages.append(
                             f'El correo electrónico no es válido, por favor intenta nuevamente')

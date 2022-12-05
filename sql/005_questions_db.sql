@@ -32,7 +32,7 @@ VALUES (
         'Reserva'
     ), (
         3,
-        '¿Cuál es el email del cliente?',
+        '¿Cuál es el email del cliente, en caso de no tenerlo escribir "no"?',
         'Reserva'
     ), (
         4,

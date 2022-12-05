@@ -18,9 +18,9 @@ class Config:
 
     # Twilio Token and SID
     TWILIO_ACCOUNT_SID = os.environ.get(
-        "TWILIO_ACCOUNT_SID", 'ACd88e27bf758736e26c0ca47b9b949885')
+        "TWILIO_ACCOUNT_SID", 'AC98f152e3c3a3ae7c312fe854e4811f20')
     TWILIO_AUTH_TOKEN = os.environ.get(
-        "TWILIO_AUTH_TOKEN", '674fe0bc1d80710bfcf19a3f8dc429cd')
+        "TWILIO_AUTH_TOKEN", 'eeee115f102809eea526fa01e9c9be76')
     TWILIO_PHONE_NUMBER = os.environ.get(
         "TWILIO_PHONE_NUMBER", 'whatsapp:+14155238886')
 
