@@ -52,7 +52,7 @@ def create_client_carga_masiva(name: str, phone: str, email: str) -> Client:
 
 def conversations_client(phone_number: str, incoming_message: str) -> list[str]:
     '''
-    Conversations with the user
+    Conversations with the client, it returns a list of messages to be sent to the client by whatsapp
     '''
     messages: list[str] = []
     client = Client.query.filter_by(phone=phone_number).first()
@@ -70,6 +70,12 @@ def conversations_client(phone_number: str, incoming_message: str) -> list[str]:
         for message in flow_facturacion(incoming_message, booking):
             messages.append(message)
         incoming_message = None
+    client_flows(incoming_message, messages, client, booking, ubicacion)
+    return messages
+
+
+def client_flows(incoming_message: str, messages: str, client: int, booking: int, ubicacion: int) -> None:
+    ''' All the flows for the client '''
     if incoming_message:
         match incoming_message:
             case "1":
@@ -86,7 +92,6 @@ def conversations_client(phone_number: str, incoming_message: str) -> list[str]:
                     f'No pude entender tu respuesta 😟 Inténtalo nuevamente 👇🏼 o escribe menú para desplegar las opciones con las que podemos apoyarte.')
     else:
         pass
-    return messages
 
 
 def client_flow(incoming_message: str, resp: str, phone_number: str) -> None:
@@ -261,7 +266,8 @@ def welcome_client(resp) -> None:
         f'¡Hola {getattr(Client.query.filter_by(id=session["client_id"]).first(), "name", "")}! Bienvenido a Homada, para comenzar por favor escribe la palabra {font_weight("bold", "menú")} para ver las opciones disponibles 😊')
 
 
-def initialize_client_conversation(incoming_message, phone_number, resp):
+def initialize_client_conversation(incoming_message: str, phone_number: str, resp: str) -> None:
+    """Initialize the conversation with the client"""
     client = Client.query.filter_by(phone=phone_number, status=1).first()
     booking = Booking.query.filter_by(
         booking_number=incoming_message, status=1).first() if 'reservación' not in session else Booking.query.filter_by(
