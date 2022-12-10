@@ -106,14 +106,15 @@ def flow_facturacion(incoming_message: str, booking) -> str:
         if incoming_message == 'si':
             session['review_client_email'] = True
             session['review_upload'] = False
-            client = Client.query.filter_by(id=session['client_id']).first()
-            if client.email:
-                messages.append(
-                    f'Se enviará la factura con el correo {client.email}, ¿es correcto? si/no')
-            else:
+            client = Client.query.filter_by(
+                id=session['client_id']).first() if session.get('client_id') else None
+            if not client or not client.email:
                 messages.append(getattr(Questions.query.filter_by(
                     id=10, type_question="Factura").first(), 'question', None))
                 session['question_id'] = 10
+            else:
+                messages.append(
+                    f'Se enviará la factura con el correo {client.email}, ¿es correcto? si/no')
         elif incoming_message == 'no':
             messages.append('Documento no subido')
             delete_session_completly()

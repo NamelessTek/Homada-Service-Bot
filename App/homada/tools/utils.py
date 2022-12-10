@@ -17,7 +17,7 @@ def delete_session() -> None:
     '''
     Delete the keys in the session dictionary
     '''
-    for key in ['document','question_id', 'revision', 'nombre_cliente', 'telefono_cliente', 'email_cliente', 'num_reservacion_cliente', 'dia_llegada_cliente', 'dia_salida_cliente', 'ubicacion_cliente', 'hr_llegada_cliente', 'hr_salida_cliente']:
+    for key in ['document', 'question_id', 'revision', 'nombre_cliente', 'telefono_cliente', 'email_cliente', 'num_reservacion_cliente', 'dia_llegada_cliente', 'dia_salida_cliente', 'ubicacion_cliente', 'hr_llegada_cliente', 'hr_salida_cliente']:
         if key in session:
             del session[key]
 
@@ -94,19 +94,13 @@ def no_reservation_found(resp) -> str:
     '''No reservation found message'''
     resp.message('¡Hola! 😀')
     resp.message('Gracias por tu preferencia.')
-    resp.message('Por el momento no podemos encontrar una reservación a tu nombre 😯')
+    resp.message(
+        'Por el momento no podemos encontrar una reservación a tu nombre 😯')
     resp.message('Por favor compartenos tu número de reservación.')
 
 
-# def validate_location(location: str) -> bool:
-#     '''
-#     Validate location
-#     '''
-#     # use regex to validate if incoming message is a location in DB, else show answers that are similar to the incoming message
-#     try:
-#         location = Ubicacion.query.filter_by(
-#             name=location.strip().lower()).first()
-#         re.match(r"[^@]+@[^@]+\.[^@]+", location)
-#         return location is not None
-#     except Exception:
-#         return False
+def goodbye_client(resp) -> None:
+    '''
+    Sends a goodbye message to the client
+    '''
+    resp.message(f'¡Adiós! Esperamos verte pronto 😃')
