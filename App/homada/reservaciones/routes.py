@@ -9,7 +9,7 @@ reservacion = Blueprint('reservacion', __name__)
 def data_loader_booking():
 
     req_data = {}
-    clean_headers = ['Casa Mirador', 'Unnamed: 10', 'Unnamed: 11', 'Unnamed: 7', 'Unnamed: 8', 'Unnamed: 9']
+    clean_headers = ['Casa Mirador']
     headers = ["nombre_cliente", "telefono_cliente", "email_cliente", 
         "num_reservacion_cliente", "dia_llegada_cliente", "dia_salida_cliente", "ubicacion_cliente"]
     if 'file' not in request.files:
@@ -43,23 +43,23 @@ def data_loader_booking():
                         for header in headers:
                             if header == "telefono_cliente":
                                 number = int(row[header])
-                                req_data[header] = "+" + str(number)
+                                req_data[header] = "+"+str(number)
                             else:   
                                 req_data[header] = row[header]
-                            print(header)
-                            print(row[header])
+                            #print(header)
+                            #print(row[header])
 
-                if req_data:
-                    data = save_reservation_data_loader(req_data)
-                    if data:
-                        message = {
-                            "success": True,
-                            "code": 1,
-                            "error": False,
-                            "message": 'Bookings created successfully'
-                        }
-                        resp = jsonify(message)
-                        return resp
+                    if req_data:
+                        data = save_reservation_data_loader(req_data)
+                if data:
+                    message = {
+                        "success": True,
+                        "code": 1,
+                        "error": False,
+                        "message": 'Bookings created successfully'
+                    }
+                    resp = jsonify(message)
+                    return resp
             else:
                 message = {
                     "success": True,

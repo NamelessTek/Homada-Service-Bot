@@ -35,20 +35,21 @@ def save_reservation_data_loader(req_data):
     Save reservation data in the database, it aks for the client data and the location data and
     creates the booking
     '''
-    email = req_data['email_cliente']
-    client_result = Client.query.filter_by(email=email).first()
+    session['admin_id']=1
+    phone = req_data['telefono_cliente']
+    client_result = Client.query.filter_by(phone=phone).first()
     if not client_result:
         create_client_carga_masiva(req_data['nombre_cliente'],
-                  req_data['telefono_cliente'], email)
+                  req_data['telefono_cliente'], req_data['email_cliente'])
 
     ubicacion = Ubicacion.query.filter_by(
         ubicacion=req_data['ubicacion_cliente']).first()
-    booking = create_booking_data_loader(email, ubicacion,req_data) if not Booking.query.filter_by(
+    booking = create_booking_data_loader(phone, ubicacion,req_data) if not Booking.query.filter_by(
         booking_number=req_data['num_reservacion_cliente']).first() else None
 
     return booking
 
-def create_booking_data_loader(email: str, ubicacion: str, req_data) -> Booking:
+def create_booking_data_loader(phone: str, ubicacion: str, req_data) -> Booking:
     '''
     Create booking data in the database by receiving the email and the location
     '''
@@ -57,7 +58,7 @@ def create_booking_data_loader(email: str, ubicacion: str, req_data) -> Booking:
     if not query_booking:
         booking = Booking(booking_number=req_data['num_reservacion_cliente'], arrival=
             req_data['dia_llegada_cliente'], departure=
-            req_data['dia_salida_cliente'], client=Client.query.filter_by(email=email).first(), ubicacion=ubicacion,
+            req_data['dia_salida_cliente'], client=Client.query.filter_by(phone=phone).first(), ubicacion=ubicacion,
             arrival_time=ubicacion.arrival_time, departure_time=ubicacion.departure_time)
         db.session.add(booking)
         db.session.commit()

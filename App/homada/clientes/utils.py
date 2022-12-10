@@ -22,7 +22,10 @@ def create_client(name: str, phone: str, email: str) -> Client:
     '''
     query_client = Client.query.filter_by(phone=phone).first()
     if not query_client:
-        client = Client(name=name.title(), phone=phone, email=email)
+        if email == "None":
+            client = Client(name=name.title(), phone=phone)
+        else:
+            client = Client(name=name.title(), phone=phone, email=email)
         db.session.add(client)
         db.session.commit()
         create_log(client.__class__.__name__,

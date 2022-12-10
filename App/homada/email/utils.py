@@ -20,7 +20,8 @@ def send_email(booking: str, email: str) -> None:
     client = booking.client
     ubicacion = booking.ubicacion
     mail['From'] = Config.MAIL_EMAIL
-    mail['To'] = email
+    #mail['To'] = email
+    mail['To'] = "gomezrbz@gmail.com"
     mail['Subject'] = f'''Factura de número de reservación {booking.booking_number}'''
     mail.add_header('Content-Type', 'text/html',)
 

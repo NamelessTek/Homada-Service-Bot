@@ -109,7 +109,7 @@ def flow_facturacion(incoming_message: str, booking) -> str:
             client = Client.query.filter_by(id=session['client_id']).first()
             if client.email:
                 messages.append(
-                    f'Se enviará la factura con el correo {client.mail}, ¿es correcto? si/no')
+                    f'Se enviará la factura con el correo {client.email}, ¿es correcto? si/no')
             else:
                 messages.append(getattr(Questions.query.filter_by(
                     id=10, type_question="Factura").first(), 'question', None))
