@@ -176,7 +176,7 @@ def flow_ubicacion(client: int, booking: int, ubicacion: int) -> list:
         messages = [f'¡Hola!, muchas gracias por tu preferencia']
         if booking:
             messages.extend(
-                [f'{client.name}, para tu entrada el día {font_weight("bold", booking.arrival.strftime("%d/%m/%Y"))}, queremos compartirte algunos datos. ',
+                [f'Para tu entrada el día {font_weight("bold", booking.arrival.strftime("%d/%m/%Y"))}, queremos compartirte algunos datos. ',
                  f'Para tu facilidad, el link de navegación es el siguiente: {font_weight("bold",ubicacion.url)}.',
                  f'En caso de necesitar apoyo por favor escribe en el chat la palabra {font_weight("bold","menú")}'])
             delete_session() if 'menú' in session else None
