@@ -131,11 +131,16 @@ def flow_network(client: int, booking: int, ubicacion: int) -> list:
     '''
     if client:
         messages = [
-            f'¡Hola {client.name}! Hola bienvenido a Homada, muchas gracias por tu preferencia']
+            f'¡Hola {client.name}! Gracias por elegir Homada.']
         if booking:
             messages.extend(
-                [f'Sabemos que puedes necesitar conexión a internet, la red es {font_weight("bold", ubicacion.ssid)} y el password es {font_weight("bold",ubicacion.clave)}.',
-                 f'En caso de necesitar apoyo por favor escribe en el chat la palabra {font_weight("bold", "menú")}.'])
+                [f'''¿Necesitas conexión a internet? 💻 
+
+La red es: {font_weight("bold", ubicacion.ssid)}
+El password es: {font_weight("bold",ubicacion.clave)}.
+
+¿Necesitas ayuda? 
+Escribe la palabra {font_weight("bold","menú")}.'''])
 
             delete_session() if 'menú' in session else None
 
@@ -144,11 +149,13 @@ def flow_network(client: int, booking: int, ubicacion: int) -> list:
                 f'{client.name}, no tienes reservaciones, por favor haz una reservación')
     else:
         messages = [
-            f'¡Hola! Hola bienvenido a Homada, muchas gracias por tu preferencia']
+            f'Gracias por elegir Homada.']
         if booking:
             messages.extend(
-                [f'Sabemos que puedes necesitar conexión a internet, la red es {ubicacion.ssid} y el password es {ubicacion.clave}.',
-                 f'En caso de necesitar apoyo por favor escribe en el chat la palabra {font_weight("bold", "menú")}.'])
+                [f'''¿Necesitas conexión a internet? 💻 
+
+La red es {font_weight("bold", ubicacion.ssid)} y el password es {font_weight("bold",ubicacion.clave)}.
+En caso de necesitar apoyo por favor escribe en el chat la palabra {font_weight("bold", "menú")}.'''])
 
             delete_session() if 'menú' in session else None
         else:
@@ -161,13 +168,21 @@ def flow_ubicacion(client: int, booking: int, ubicacion: int) -> list:
     '''
     Conversation flow sending the location data to the user
     '''
+    
+    messages = []
     if client:
-        messages = [f'¡Hola {client.name}!, muchas gracias por tu preferencia']
         if booking:
             messages.extend(
-                [f'{client.name}, para tu entrada el día {font_weight("bold", booking.arrival.strftime("%d/%m/%Y"))}, queremos compartirte algunos datos. ',
-                 f'Para tu facilidad, el link de navegación es el siguiente: {font_weight("bold",ubicacion.url)}.',
-                 f'En caso de necesitar apoyo por favor escribe en el chat la palabra {font_weight("bold","menú")}'])
+                [f'''{client.name}, tu reservación comienza el día {font_weight("bold", booking.arrival.strftime("%d/%m/%Y"))}.
+                
+Te compartimos algunos datos importantes. 
+
+La dirección de tu estancia es: {font_weight("bold",ubicacion.direccion)}
+
+El link de navegación es el siguiente: {font_weight("bold",ubicacion.url)}.
+
+¿Necesitas ayuda? 
+Escribe la palabra {font_weight("bold","menú")}.'''])
             delete_session() if 'menú' in session else None
         else:
             messages.append(
@@ -176,9 +191,16 @@ def flow_ubicacion(client: int, booking: int, ubicacion: int) -> list:
         messages = [f'¡Hola!, muchas gracias por tu preferencia']
         if booking:
             messages.extend(
-                [f'Para tu entrada el día {font_weight("bold", booking.arrival.strftime("%d/%m/%Y"))}, queremos compartirte algunos datos. ',
-                 f'Para tu facilidad, el link de navegación es el siguiente: {font_weight("bold",ubicacion.url)}.',
-                 f'En caso de necesitar apoyo por favor escribe en el chat la palabra {font_weight("bold","menú")}'])
+                [f'''Tu reservación comienza el día {font_weight("bold", booking.arrival.strftime("%d/%m/%Y"))}.
+                
+Te compartimos algunos datos importantes. 
+
+La dirección de tu estancia es: {font_weight("bold",ubicacion.direccion)}
+
+El link de navegación es el siguiente: {font_weight("bold",ubicacion.url)}.
+
+¿Necesitas ayuda? 
+Escribe la palabra {font_weight("bold","menú")}.'''])
             delete_session() if 'menú' in session else None
         else:
             messages.append(

@@ -3,6 +3,7 @@ from flask import session
 import phonenumbers
 import re
 import datetime
+import time
 
 
 def delete_session_completly() -> None:
@@ -93,20 +94,8 @@ def font_weight(style: str, text: str) -> None:
 def no_reservation_found(resp) -> str:
     '''No reservation found message'''
     resp.message('¡Hola! 😀')
-    resp.message('Gracias por tu preferencia.')
-    resp.message('Por el momento no podemos encontrar una reservación a tu nombre 😯')
-    resp.message('Por favor compartenos tu número de reservación.')
-
-
-# def validate_location(location: str) -> bool:
-#     '''
-#     Validate location
-#     '''
-#     # use regex to validate if incoming message is a location in DB, else show answers that are similar to the incoming message
-#     try:
-#         location = Ubicacion.query.filter_by(
-#             name=location.strip().lower()).first()
-#         re.match(r"[^@]+@[^@]+\.[^@]+", location)
-#         return location is not None
-#     except Exception:
-#         return False
+    resp.message('''Gracias por tu preferencia.
+    
+No podemos encontrar una reservación a tu nombre. 😯
+    
+Por favor compártenos tu número de confirmación.''')

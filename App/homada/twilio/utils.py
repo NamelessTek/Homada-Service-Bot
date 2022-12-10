@@ -23,7 +23,6 @@ def incoming_message() -> str:
     admin = Admin.query.filter_by(phone=phone_number, status=1).first()
     if not admin:
         # Client conversation
-
         client = Client.query.filter_by(phone=phone_number).first()
         if client:
             session['client_id'] = getattr(Client.query.filter_by(
@@ -31,7 +30,8 @@ def incoming_message() -> str:
             if 'reservación' in session:
                 booking = Booking.query.filter_by(
                     booking_number=session['reservación'], status=1).first()
-
+                print('Se mando booking para saber cual es')
+                print(booking)
                 session['client_id'] = getattr(Client.query.filter_by(
                     id=booking.cliente_id).first(), 'id', None)
             else:

@@ -53,7 +53,7 @@ def send_email(booking: str, email: str) -> None:
 
     <h2>Hola equipo Homada!</h2>
 
-    El cliente Luis con el número de reservación 1234 ha solicitado su factura. Te anexamos su constancia fiscal, y este es su contacto.
+    El cliente {client.name} con el número de reservación {booking.booking_number} ha solicitado su factura. Te anexamos su constancia fiscal, y este es su contacto.
 
     <table>
         <tr>
