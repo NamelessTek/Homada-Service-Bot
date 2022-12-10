@@ -24,7 +24,7 @@ def save_reservation() -> Booking:
     ubicacion = Ubicacion.query.filter_by(
         ubicacion=session['ubicacion_cliente']).first()
     booking = create_booking(session['telefono_cliente'], ubicacion) if not Booking.query.filter_by(
-        booking_number=session['num_reservacion_cliente'], status=1).first() else None
+        booking_number=session['num_reservacion_cliente']).first() else None
 
     return booking
 

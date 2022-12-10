@@ -12,7 +12,7 @@ def get_admin(admin: str) -> dict:
 
 def get_admin_phones() -> list:
     '''return phones of all admins'''
-    phones = []
+    phones: list[str] = []
     admins = Admin.query.all()
     for admin in admins:
         phones.append(admin.phone)

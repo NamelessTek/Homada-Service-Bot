@@ -211,6 +211,8 @@ def notify_client(phone_number: str) -> None:
                 from_=Config.TWILIO_PHONE_NUMBER,
                 body=message
             )
+    else:
+        raise Exception("Client not found")
 
 
 def review_client() -> str:
