@@ -50,7 +50,7 @@ def create_client_carga_masiva(name: str, phone: str, email: str) -> Client:
     return client
 
 
-def conversations_client(phone_number: str, incoming_message: str) -> list[str]:
+def conversations_client(phone_number: str, incoming_message: str) -> list[list[str]]:
     '''
     Conversations with the client, it returns a list of messages to be sent to the client by whatsapp
     '''

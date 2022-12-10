@@ -26,7 +26,7 @@ def incoming_message() -> str:
         session['admin_id'] = admin.id
         initialize_admin_conversation(incoming_message, phone_number, resp)
     else:
-        resp.message("No se encontró el número de teléfono")
+        resp.message(error_twiml)
     return str(resp)
 
 
