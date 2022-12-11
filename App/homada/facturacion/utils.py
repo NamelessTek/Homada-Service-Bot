@@ -109,26 +109,18 @@ Escribe si o no para continuar.''')
         if incoming_message == 'si':
             session['review_client_email'] = True
             session['review_upload'] = False
-<<<<<<< HEAD
-            client = Client.query.filter_by(id=session['client_id']).first()
-            if client.email:
+            client = Client.query.filter_by(
+                id=session['client_id']).first() if session.get('client_id') else None
+            if not client or not client.email:
+                messages.append(getattr(Questions.query.filter_by(
+                    id=10, type_question="Factura").first(), 'question', None))
+                session['question_id'] = 10
+            else:   
                 messages.append(
                     f'''Se enviará la factura al correo {client.email}.
                     
 ¿Es correcto?
 Escribe si o no para continuar.''')
-            else:
-=======
-            client = Client.query.filter_by(
-                id=session['client_id']).first() if session.get('client_id') else None
-            if not client or not client.email:
->>>>>>> a9797c673a1b49dcce187ed5abacd81eddbdf83e
-                messages.append(getattr(Questions.query.filter_by(
-                    id=10, type_question="Factura").first(), 'question', None))
-                session['question_id'] = 10
-            else:
-                messages.append(
-                    f'Se enviará la factura con el correo {client.email}, ¿es correcto? si/no')
         elif incoming_message == 'no':
             messages.append('''Carga de documento cancelada.
 
