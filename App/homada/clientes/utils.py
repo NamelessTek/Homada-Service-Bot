@@ -137,11 +137,13 @@ def flow_network(client: int, booking: int, ubicacion: int) -> list:
     Conversation flow sending the network data to the user
     '''
     if client:
-        messages = [
-            f'¡Hola {client.name}! Gracias por elegir Homada.']
         if booking:
+            
+            messages = []
             messages.extend(
-                [f'''¿Necesitas conexión a internet? 💻 
+                [f'''¡Hola {client.name}! Gracias por elegir Homada.
+
+¿Necesitas conexión a internet? 💻 
 
 La red es: {font_weight("bold", ubicacion.ssid)}
 El password es: {font_weight("bold",ubicacion.clave)}.
@@ -155,11 +157,12 @@ Escribe la palabra {font_weight("bold","menú")}.'''])
             messages.append(
                 f'{client.name}, no tienes reservaciones, por favor haz una reservación')
     else:
-        messages = [
-            f'Gracias por elegir Homada.']
+        messages = []
         if booking:
             messages.extend(
-                [f'''¿Necesitas conexión a internet? 💻 
+                [f'''Gracias por elegir Homada.
+                
+¿Necesitas conexión a internet? 💻 
 
 La red es {font_weight("bold", ubicacion.ssid)} y el password es {font_weight("bold",ubicacion.clave)}.
 En caso de necesitar apoyo por favor escribe en el chat la palabra {font_weight("bold", "menú")}.'''])
@@ -180,9 +183,9 @@ def flow_ubicacion(client: int, booking: int, ubicacion: int) -> list:
     if client:
         if booking:
             messages.extend(
-                [f'''{client.name}, tu reservación comienza el día {font_weight("bold", booking.arrival.strftime("%d/%m/%Y"))}.
+                [f'''{client.name} te compartimos algunos datos importantes.
                 
-Te compartimos algunos datos importantes. 
+Tu reservación comienza el día {font_weight("bold", booking.arrival.strftime("%d/%m/%Y"))}.
 
 La dirección de tu estancia es: {font_weight("bold",ubicacion.direccion)}
 
@@ -198,9 +201,10 @@ Escribe la palabra {font_weight("bold","menú")}.'''])
         messages = [f'¡Hola!, muchas gracias por tu preferencia']
         if booking:
             messages.extend(
-                [f'''Tu reservación comienza el día {font_weight("bold", booking.arrival.strftime("%d/%m/%Y"))}.
-                
+                [f'''
 Te compartimos algunos datos importantes. 
+
+Tu reservación comienza el día {font_weight("bold", booking.arrival.strftime("%d/%m/%Y"))}.                
 
 La dirección de tu estancia es: {font_weight("bold",ubicacion.direccion)}
 
@@ -227,7 +231,7 @@ def notify_client(phone_number: str) -> None:
         hora_llegada = session['hr_llegada_cliente'].strftime(
             "%H") + "pm" if int(session['hr_llegada_cliente'].strftime("%H")) > 12 else "am"
         body = [
-            f"¡Hola {client.name}, bienvenido a Homada!, muchas gracias por tu preferencia.", f"Para tu entrada el día {font_weight('bold',session['dia_llegada_cliente'])}, queremos compartirte algunos datos. La hora de entrada es a las {font_weight('bold',hora_llegada)}. Sabemos que puedes necesitar conexión a internet, la red es {font_weight('bold',ubicacion.ssid)} y el password es {font_weight('bold',ubicacion.clave)}. Para tu facilidad el link de navegación es el siguiente: {font_weight('bold',ubicacion.url)}.", f" En caso de necesitar apoyo por favor escribe en el chat la palabra {font_weight('bold', 'menú')}"]
+            f"¡Hola {client.name}, gracias por elegir Homada!", f"Para tu entrada el día {font_weight('bold',session['dia_llegada_cliente'])}, queremos compartirte algunos datos. La hora de entrada es a las {font_weight('bold',hora_llegada)}. Sabemos que puedes necesitar conexión a internet, la red es {font_weight('bold',ubicacion.ssid)} y el password es {font_weight('bold',ubicacion.clave)}. Para tu facilidad el link de navegación es el siguiente: {font_weight('bold',ubicacion.url)}.", f" En caso de necesitar apoyo por favor escribe en el chat la palabra {font_weight('bold', 'menú')}"]
         client = TwilioClient(
             Config.TWILIO_ACCOUNT_SID, Config.TWILIO_AUTH_TOKEN)
         for message in body:
@@ -288,7 +292,11 @@ def welcome_client(resp) -> None:
     Sends a welcome message to the client
     '''
     resp.message(
-        f'¡Hola {getattr(Client.query.filter_by(id=session["client_id"]).first(), "name", "")}! Bienvenido a Homada, para comenzar por favor escribe la palabra {font_weight("bold", "menú")} para ver las opciones disponibles 😊')
+        f'''¡Hola {getattr(Client.query.filter_by(id=session["client_id"]).first(), "name", "")}!  
+
+Gracias por elegir Homada. 
+
+Para comenzar por favor escribe la palabra {font_weight("bold", "menú")} para ver las opciones disponibles 😊''')
 
 
 def initialize_client_conversation(incoming_message: str, phone_number: str, resp: str) -> None:

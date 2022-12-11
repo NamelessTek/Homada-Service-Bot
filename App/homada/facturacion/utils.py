@@ -115,9 +115,12 @@ Escribe si o no para continuar.''')
                 messages.append(getattr(Questions.query.filter_by(
                     id=10, type_question="Factura").first(), 'question', None))
                 session['question_id'] = 10
-            else:
+            else:   
                 messages.append(
-                    f'Se enviará la factura con el correo {client.email}, ¿es correcto? si/no')
+                    f'''Se enviará la factura al correo {client.email}.
+                    
+¿Es correcto?
+Escribe si o no para continuar.''')
         elif incoming_message == 'no':
             messages.append('''Carga de documento cancelada.
 

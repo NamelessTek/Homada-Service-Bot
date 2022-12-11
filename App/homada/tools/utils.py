@@ -94,10 +94,11 @@ def font_weight(style: str, text: str) -> None:
 def no_reservation_found(resp) -> str:
     '''No reservation found message'''
     resp.message('¡Hola! 😀')
-    resp.message('Gracias por tu preferencia.')
-    resp.message(
-        'Por el momento no podemos encontrar una reservación a tu nombre 😯')
-    resp.message('Por favor compartenos tu número de reservación.')
+    resp.message('''Gracias por tu preferencia.
+    
+No podemos encontrar una reservación a tu nombre. 😯
+    
+Por favor compártenos tu número de confirmación.''')
 
 
 def goodbye_client(resp) -> None:
