@@ -22,10 +22,8 @@ def create_client(name: str, phone: str, email: str) -> Client:
     '''
     query_client = Client.query.filter_by(phone=phone).first()
     if not query_client:
-        if email == "None":
-            client = Client(name=name.title(), phone=phone)
-        else:
-            client = Client(name=name.title(), phone=phone, email=email)
+        client = Client(name=name.title(), phone=phone,
+                        email=email if email else None)
         db.session.add(client)
         db.session.commit()
         create_log(client.__class__.__name__,
@@ -50,7 +48,7 @@ def create_client_carga_masiva(name: str, phone: str, email: str) -> Client:
     return client
 
 
-def conversations_client(phone_number: str, incoming_message: str) -> list[str]:
+def conversations_client(phone_number: str, incoming_message: str) -> list[list[str]]:
     '''
     Conversations with the client, it returns a list of messages to be sent to the client by whatsapp
     '''
@@ -235,6 +233,8 @@ def notify_client(phone_number: str) -> None:
                 from_=Config.TWILIO_PHONE_NUMBER,
                 body=message
             )
+    else:
+        raise Exception("Client not found")
 
 
 def review_client() -> str:

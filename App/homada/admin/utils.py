@@ -12,7 +12,7 @@ def get_admin(admin: str) -> dict:
 
 def get_admin_phones() -> list:
     '''return phones of all admins'''
-    phones = []
+    phones: list[str] = []
     admins = Admin.query.all()
     for admin in admins:
         phones.append(admin.phone)
@@ -93,9 +93,8 @@ def conversations_admin(incoming_message: str) -> list[str]:
                 case _:
                     pass
 
-            next_id_question = int(session['question_id'])+1
             next_question = Questions.query.filter_by(
-                id=next_id_question, type_question="Reserva").first()
+                id=int(session['question_id'])+1, type_question="Reserva").first()
             if next_question:
                 session['question_id'] = next_question.id
                 messages.append(next_question.question)
