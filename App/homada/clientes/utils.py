@@ -52,7 +52,7 @@ def create_client_carga_masiva(name: str, phone: str, email: str) -> Client:
 
 def conversations_client(phone_number: str, incoming_message: str) -> list[str]:
     '''
-    Conversations with the user
+    Conversations with the client, it returns a list of messages to be sent to the client by whatsapp
     '''
     messages: list[str] = []
     client = Client.query.filter_by(phone=phone_number).first()
@@ -70,6 +70,12 @@ def conversations_client(phone_number: str, incoming_message: str) -> list[str]:
         for message in flow_facturacion(incoming_message, booking):
             messages.append(message)
         incoming_message = None
+    client_flows(incoming_message, messages, client, booking, ubicacion)
+    return messages
+
+
+def client_flows(incoming_message: str, messages: str, client: int, booking: int, ubicacion: int) -> None:
+    ''' All the flows for the client '''
     if incoming_message:
         match incoming_message:
             case "1":
@@ -86,7 +92,6 @@ def conversations_client(phone_number: str, incoming_message: str) -> list[str]:
                     f'No pude entender tu respuesta 😟 Inténtalo nuevamente 👇🏼 o escribe menú para desplegar las opciones con las que podemos apoyarte.')
     else:
         pass
-    return messages
 
 
 def client_flow(incoming_message: str, resp: str, phone_number: str) -> None:
@@ -117,6 +122,7 @@ def client_flow(incoming_message: str, resp: str, phone_number: str) -> None:
                     session['menú'] = 1
             else:
                 session['menú'] = 0
+                print('No reservation found')
                 no_reservation_found(resp)
         else:
             session['menú'] = 0
@@ -262,11 +268,16 @@ def menu(resp) -> None:
         "¿Qué deseas hacer? 💫\n1. Obtener Ubicación 📍\n2. Facturación 💳\n3. Clave WIFI 🔐")
 
 
-def goodbye_client(resp) -> None:
-    '''
-    Sends a goodbye message to the client
-    '''
-    resp.message(f'¡Adiós! Esperamos verte pronto 😃')
+def client_options(incoming_message: str, resp: str) -> None:
+    '''Shows the client options'''
+    if incoming_message == "salir" or incoming_message == "adios" or incoming_message == "gracias":
+        delete_session_completly()
+        goodbye_client(resp)
+    elif incoming_message == "menú" or "menú" in session or incoming_message == "menu":
+        client_flow(incoming_message, resp, getattr(Client.query.filter_by(
+                    id=session['client_id']).first(), 'phone', None))
+    else:
+        welcome_client(resp)
 
 
 def welcome_client(resp) -> None:
@@ -275,3 +286,22 @@ def welcome_client(resp) -> None:
     '''
     resp.message(
         f'¡Hola {getattr(Client.query.filter_by(id=session["client_id"]).first(), "name", "")}! Bienvenido a Homada, para comenzar por favor escribe la palabra {font_weight("bold", "menú")} para ver las opciones disponibles 😊')
+
+
+def initialize_client_conversation(incoming_message: str, phone_number: str, resp: str) -> None:
+    """Initialize the conversation with the client"""
+    client = Client.query.filter_by(phone=phone_number, status=1).first()
+    booking = Booking.query.filter_by(
+        booking_number=incoming_message, status=1).first() if 'reservación' not in session else Booking.query.filter_by(
+        booking_number=session['reservación'], status=1).first()
+    if client:
+        session['client_id'] = getattr(Client.query.filter_by(
+            phone=phone_number).first(), 'id', None)
+        client_options(incoming_message, resp)
+    elif booking:
+        session['reservación'] = booking.booking_number
+        session['client_id'] = getattr(Booking.query.filter_by(
+            booking_number=session['reservación']).first(), 'cliente_id', None)
+        client_options(incoming_message, resp)
+    else:
+        no_reservation_found(resp)

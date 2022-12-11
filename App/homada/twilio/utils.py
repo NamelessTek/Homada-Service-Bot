@@ -1,9 +1,6 @@
-from homada.models import Client, Admin
-from homada.reservaciones.utils import cancel_reservation
-from homada.email.utils import send_email
-from homada.facturacion.utils import flow_facturacion
-from homada.clientes.utils import client_flow, goodbye_client, welcome_client
-from homada.admin.utils import conversations_admin
+from homada.models import Admin
+from homada.clientes.utils import initialize_client_conversation
+from homada.admin.utils import initialize_admin_conversation
 from homada.tools.utils import *
 from twilio.twiml.messaging_response import MessagingResponse
 from flask import session, request
@@ -23,6 +20,7 @@ def incoming_message() -> str:
     admin = Admin.query.filter_by(phone=phone_number, status=1).first()
     if not admin:
         # Client conversation
+<<<<<<< HEAD
         client = Client.query.filter_by(phone=phone_number).first()
         if client:
             session['client_id'] = getattr(Client.query.filter_by(
@@ -46,41 +44,15 @@ def incoming_message() -> str:
             print('No client')
             no_reservation_found(resp)
             session['reservación'] = 1
+=======
+        initialize_client_conversation(incoming_message, phone_number, resp)
+>>>>>>> a9797c673a1b49dcce187ed5abacd81eddbdf83e
     elif phone_number == admin.phone:
         # Admin conversation
         session['admin_id'] = admin.id
-        client = Client.query.filter_by(phone=phone_number).first()
-        if client:
-            session['client_id'] = getattr(Client.query.filter_by(
-                phone=phone_number).first(), 'id', None)
-        elif 'reservación' in session:
-            booking = Booking.query.filter_by(
-                booking_number=session['reservación'], status=1).first()
-
-            session['client_id'] = getattr(Client.query.filter_by(
-                id=booking.cliente_id).first(), 'id', None)
-
-        if incoming_message == "salir" or incoming_message == "adios" or incoming_message == "gracias":
-            delete_session_completly()
-            goodbye_client(resp)
-        elif incoming_message == "menú" or "menú" in session or incoming_message == "menu":
-            client_flow(incoming_message, resp, phone_number)
-        elif incoming_message == 'cancelar reserva' or incoming_message == 'cancelar' or 'cancelar' in session:
-            for message in cancel_reservation(incoming_message):
-                resp.message(message)
-        elif incoming_message == 'factura' or 'factura' in session:
-            for message in flow_facturacion(incoming_message):
-                resp.message(message)
-        else:
-            if 'question_id' not in session and 'revision' not in session:
-                if 'revision' not in session:
-                    welcome_homada(resp)
-
-            for message in conversations_admin(incoming_message):
-                resp.message(message)
+        initialize_admin_conversation(incoming_message, phone_number, resp)
     else:
-        no_reservation_found(resp)
-        session['reservación'] = 1
+        resp.message("No se encontró el número de teléfono")
     return str(resp)
 
 
@@ -88,14 +60,3 @@ def error_twiml() -> str:
     goodbye = f"No pude entender tu respuesta 😟 Inténtalo nuevamente 👇🏼 o escribe {font_weight('bold', 'menú')} para desplegar las opciones con las que podemos apoyarte."
     delete_session()
     return goodbye
-
-
-def welcome_homada(resp) -> str:
-    '''
-    Sends a welcome message to the admin and a list of fields to fill in order to create a reservation and a client
-    '''
-    resp.message("Hola, bienvenido a Homada 👍")
-    resp.message(
-        "Para la creación de una reservación es necesario crear el cliente con los siguientes datos:")
-    resp.message(
-        " - Nombre\n- Teléfono\n- Email\n- Número de reservación\n- Día de llegada\n- Hora de llegada\n- Día de partida\n- Hora de partida\n- Ubicación")

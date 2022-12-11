@@ -1,7 +1,7 @@
 from homada.models import Admin, Client
 from homada.tools.utils import *
-from homada.clientes.utils import notify_client, review_client
-from homada.reservaciones.utils import save_reservation
+from homada.clientes.utils import notify_client, review_client, client_flow
+from homada.reservaciones.utils import save_reservation, cancel_reservation
 from flask import session
 
 
@@ -142,3 +142,33 @@ def redirect_to_first_question() -> str:
     first_question = Questions.query.order_by(Questions.id).first()
     session['question_id'] = first_question.id
     return first_question.question
+
+
+def initialize_admin_conversation(incoming_message: str, phone_number: str, resp: str) -> None:
+    """ Initialize the conversation with the admin"""
+    if incoming_message == "salir" or incoming_message == "adios" or incoming_message == "gracias":
+        delete_session_completly()
+        goodbye_client(resp)
+    elif incoming_message == "menú" or "menú" in session or incoming_message == "menu":
+        client_flow(incoming_message, resp, phone_number)
+    elif incoming_message == 'cancelar reserva' or incoming_message == 'cancelar' or 'cancelar' in session:
+        for message in cancel_reservation(incoming_message):
+            resp.message(message)
+    else:
+        if 'question_id' not in session and 'revision' not in session:
+            if 'revision' not in session:
+                welcome_admin(resp)
+
+        for message in conversations_admin(incoming_message):
+            resp.message(message)
+
+
+def welcome_admin(resp) -> str:
+    '''
+    Sends a welcome message to the admin and a list of fields to fill in order to create a reservation and a client
+    '''
+    resp.message("Hola, bienvenido a Homada 👍")
+    resp.message(
+        "Para la creación de una reservación es necesario crear el cliente con los siguientes datos:")
+    resp.message(
+        " - Nombre\n- Teléfono\n- Email\n- Número de reservación\n- Día de llegada\n- Hora de llegada\n- Día de partida\n- Hora de partida\n- Ubicación")

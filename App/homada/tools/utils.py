@@ -18,7 +18,7 @@ def delete_session() -> None:
     '''
     Delete the keys in the session dictionary
     '''
-    for key in ['document','question_id', 'revision', 'nombre_cliente', 'telefono_cliente', 'email_cliente', 'num_reservacion_cliente', 'dia_llegada_cliente', 'dia_salida_cliente', 'ubicacion_cliente', 'hr_llegada_cliente', 'hr_salida_cliente']:
+    for key in ['document', 'question_id', 'revision', 'nombre_cliente', 'telefono_cliente', 'email_cliente', 'num_reservacion_cliente', 'dia_llegada_cliente', 'dia_salida_cliente', 'ubicacion_cliente', 'hr_llegada_cliente', 'hr_salida_cliente']:
         if key in session:
             del session[key]
 
@@ -94,8 +94,22 @@ def font_weight(style: str, text: str) -> None:
 def no_reservation_found(resp) -> str:
     '''No reservation found message'''
     resp.message('¡Hola! 😀')
+<<<<<<< HEAD
     resp.message('''Gracias por tu preferencia.
     
 No podemos encontrar una reservación a tu nombre. 😯
     
 Por favor compártenos tu número de confirmación.''')
+=======
+    resp.message('Gracias por tu preferencia.')
+    resp.message(
+        'Por el momento no podemos encontrar una reservación a tu nombre 😯')
+    resp.message('Por favor compartenos tu número de reservación.')
+
+
+def goodbye_client(resp) -> None:
+    '''
+    Sends a goodbye message to the client
+    '''
+    resp.message(f'¡Adiós! Esperamos verte pronto 😃')
+>>>>>>> a9797c673a1b49dcce187ed5abacd81eddbdf83e
