@@ -1,6 +1,6 @@
 from flask import current_app as app
 from homada.models import Uploads, Questions, Booking, Client
-from homada.tools.utils import delete_session, delete_session_completly, validate_email
+from homada.tools.utils import *
 from homada.email.utils import send_email
 from homada import db
 from homada.log.utils import create_log
@@ -97,18 +97,32 @@ def flow_facturacion(incoming_message: str, booking) -> str:
 
         if session.get('review_upload'):
             messages.append(
-                f'¿Estás seguro que deseas subir el documento {session["document"]}? si/no')
+                f'''¿Deseas subir el documento {session["document"]}? 
+
+Escribe si o no para continuar.''')
         if session.get('review_client_email'):
             messages.append(
-                f'¿Estás seguro que deseas subir el documento {session["email_cliente"]}? si/no')
+                f'''¿Deseas subir el documento {session["document"]}?
+Escribe si o no para continuar.''')
 
     elif 'review_upload' in session and session['review_upload']:
         if incoming_message == 'si':
             session['review_client_email'] = True
             session['review_upload'] = False
+<<<<<<< HEAD
+            client = Client.query.filter_by(id=session['client_id']).first()
+            if client.email:
+                messages.append(
+                    f'''Se enviará la factura al correo {client.email}.
+                    
+¿Es correcto?
+Escribe si o no para continuar.''')
+            else:
+=======
             client = Client.query.filter_by(
                 id=session['client_id']).first() if session.get('client_id') else None
             if not client or not client.email:
+>>>>>>> a9797c673a1b49dcce187ed5abacd81eddbdf83e
                 messages.append(getattr(Questions.query.filter_by(
                     id=10, type_question="Factura").first(), 'question', None))
                 session['question_id'] = 10
@@ -116,7 +130,10 @@ def flow_facturacion(incoming_message: str, booking) -> str:
                 messages.append(
                     f'Se enviará la factura con el correo {client.email}, ¿es correcto? si/no')
         elif incoming_message == 'no':
-            messages.append('Documento no subido')
+            messages.append('''Carga de documento cancelada.
+
+¿Necesitas ayuda? 
+Escribe la palabra {font_weight("bold","menú")}.''')
             delete_session_completly()
         else:
             messages.append(
@@ -148,7 +165,10 @@ def flow_facturacion(incoming_message: str, booking) -> str:
 def confirmed_doc(messages: str) -> None:
     upload_document(session['document'], session['content'])
     messages.append(
-        'Muchas gracias, tu información ha sido recibida y nos pondremos en contacto contigo 😊👌')
+        f'''Muchas gracias, hemos recibido tu información. Muy pronto mandaremos tu factura. 😊👌 
+        
+¿Necesitas ayuda? 
+Escribe la palabra {font_weight("bold","menú")}.''')
 
 
 def initialize_facturacion(messages: str) -> None:

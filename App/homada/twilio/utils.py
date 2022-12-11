@@ -20,7 +20,33 @@ def incoming_message() -> str:
     admin = Admin.query.filter_by(phone=phone_number, status=1).first()
     if not admin:
         # Client conversation
+<<<<<<< HEAD
+        client = Client.query.filter_by(phone=phone_number).first()
+        if client:
+            session['client_id'] = getattr(Client.query.filter_by(
+                phone=phone_number).first(), 'id', None)
+            if 'reservación' in session:
+                booking = Booking.query.filter_by(
+                    booking_number=session['reservación'], status=1).first()
+                print('Se mando booking para saber cual es')
+                print(booking)
+                session['client_id'] = getattr(Client.query.filter_by(
+                    id=booking.cliente_id).first(), 'id', None)
+            else:
+                if incoming_message == "salir" or incoming_message == "adios" or incoming_message == "gracias":
+                    delete_session_completly()
+                    goodbye_client(resp)
+                elif incoming_message == "menú" or "menú" in session or incoming_message == "menu":
+                    client_flow(incoming_message, resp, phone_number)
+                else:
+                    welcome_client(resp)
+        else:
+            print('No client')
+            no_reservation_found(resp)
+            session['reservación'] = 1
+=======
         initialize_client_conversation(incoming_message, phone_number, resp)
+>>>>>>> a9797c673a1b49dcce187ed5abacd81eddbdf83e
     elif phone_number == admin.phone:
         # Admin conversation
         session['admin_id'] = admin.id

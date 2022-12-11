@@ -26,4 +26,4 @@ INSERT INTO `Questions` (`ID`, `Question`, `Type_Question`) VALUES
 (7,	'¿Cuál es la ubicación en la que se hospedara el cliente?',	'Reserva'),
 (8,	'¿Cuál es el número de la reserva?',	'Cancelacion'),
 (9,	'Por favor envía tu constancia fiscal en formato pdf.',	'Factura'),
-(10,	'Ingrese el correo electrónico al que desee recibir la factura',	'Factura');
+(10,	'Ingresa el correo electrónico al que deseas recibir la factura.',	'Factura');
