@@ -20,18 +20,21 @@ def create_client(name: str, phone: str, email: str) -> Client:
     Create client data in the database by receiving the name, last name, phone and email
     from whatsApp
     '''
-    query_client = Client.query.filter_by(phone=phone).first()
-    if not query_client:
-        client = Client(name=name.title(), phone=phone,
-                        email=email if email else None)
-        db.session.add(client)
-        db.session.commit()
-        create_log(client.__class__.__name__,
-                   client.id, 1, session['admin_id'])
-    else:
-        raise Exception('Client already exists')
+    try:
+        query_client = Client.query.filter_by(phone=phone).first()
+        if not query_client:
+            client = Client(name=name.title(), phone=phone,
+                            email=email if email else None)
+            db.session.add(client)
+            db.session.commit()
+            create_log(client.__class__.__name__,
+                       client.id, 1, session['admin_id'])
+        else:
+            raise Exception('Client already exists')
 
-    return client
+        return client
+    except Exception as e:
+        print(f"Error: {e}")
 
 
 def create_client_carga_masiva(name: str, phone: str, email: str) -> Client:
@@ -73,7 +76,7 @@ def conversations_client(phone_number: str, incoming_message: str) -> list[list[
 
 
 def client_flows(incoming_message: str, messages: str, client: int, booking: int, ubicacion: int) -> None:
-    ''' All the flows for the client '''
+    ''' All the flows for the client, messages is a list of messages to be sent to the client by whatsapp'''
     if incoming_message:
         match incoming_message:
             case "1":
