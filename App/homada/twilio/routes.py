@@ -41,7 +41,7 @@ def send_message_data() -> dict:
 
 @ twilio.route('/incoming_message', methods=['GET', 'POST'])
 def incoming_message_data() -> str:
-
+    '''This endpoint is used to receive messages from the client and send a response'''
     if request.method == 'POST':
         response = {}
         error, message, code = False, '', ''
