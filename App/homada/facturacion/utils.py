@@ -33,11 +33,18 @@ def upload_document(file_name: str, content: bytes) -> Uploads:
     db.session.commit()
     session['constancia'] = str(file_fn)
     # Create a Log in DB
-    create_log(document.__class__.__name__,
-               document.id, 1, session['admin_id']) if session.get('admin_id') else None
+    try:
+        create_log(document.__class__.__name__,
+                   document.id, 1, session['admin_id']) if session.get('admin_id') else None
+    except Exception as e:
+        print(f"Log Error: {e}")
 
-    relationship_booking_document(getattr(Booking.query.filter_by(
-        cliente_id=session['client_id']).first(), 'id', None), document.id)
+    # Create a relationship between booking and document
+    try:
+        relationship_booking_document(getattr(Booking.query.filter_by(
+            cliente_id=session['client_id']).first(), 'id', None), document.id)
+    except Exception as e:
+        print(f"Relation Error: {e}")
 
 
 def relationship_booking_document(booking_id: int, document_id: int) -> None:
@@ -97,13 +104,10 @@ def flow_facturacion(incoming_message: str, booking) -> str:
 
         if session.get('review_upload'):
             messages.append(
-                f'''¿Deseas subir el documento {session["document"]}? 
-
-Escribe si o no para continuar.''')
+                f'''¿Deseas subir el documento {session["document"]}?\nEscribe si o no para continuar.''')
         if session.get('review_client_email'):
             messages.append(
-                f'''¿Deseas subir el documento {session["document"]}?
-Escribe si o no para continuar.''')
+                f'''¿Deseas mandar la factura con el correo {session['email_cliente']}?\nEscribe si o no para continuar.''')
 
     elif 'review_upload' in session and session['review_upload']:
         if incoming_message == 'si':
@@ -115,17 +119,15 @@ Escribe si o no para continuar.''')
                 messages.append(getattr(Questions.query.filter_by(
                     id=10, type_question="Factura").first(), 'question', None))
                 session['question_id'] = 10
-            else:   
+            else:
                 messages.append(
                     f'''Se enviará la factura al correo {client.email}.
                     
 ¿Es correcto?
 Escribe si o no para continuar.''')
         elif incoming_message == 'no':
-            messages.append('''Carga de documento cancelada.
-
-¿Necesitas ayuda? 
-Escribe la palabra {font_weight("bold","menú")}.''')
+            messages.append(
+                f'''Carga de documento cancelada.\n¿Necesitas ayuda?\nEscribe la palabra {font_weight("bold","menú")}.''')
             delete_session_completly()
         else:
             messages.append(
@@ -134,9 +136,12 @@ Escribe la palabra {font_weight("bold","menú")}.''')
     elif 'review_client_email' in session and session['review_client_email']:
         if incoming_message == 'si':
             confirmed_doc(messages)
-            send_email(booking, getattr(Client.query.filter_by(
-                id=session["client_id"]).first(), "email", None))
-            delete_session_completly()
+            try:
+                send_email(booking, getattr(Client.query.filter_by(
+                    id=session["client_id"]).first(), "email", None))
+            except Exception as e:
+                print(f"Email Error: {e}")
+            delete_session()
         elif incoming_message == 'no':
             messages.append(Questions.query.filter_by(
                 id=10, type_question="Factura").first().question)

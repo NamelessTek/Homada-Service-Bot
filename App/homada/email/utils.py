@@ -1,11 +1,8 @@
 from flask import current_app as app
-from flask_mail import Message
 from homada.config import Config
-from homada.models import Client, Booking, Ubicacion
-from homada import mail
+from homada.models import Admin
 from smtplib import SMTPException
 from email.message import EmailMessage
-from email.mime.text import MIMEText
 from flask import session
 import ssl
 import smtplib
@@ -20,8 +17,9 @@ def send_email(booking: str, email: str) -> None:
     client = booking.client
     ubicacion = booking.ubicacion
     mail['From'] = Config.MAIL_EMAIL
-    #mail['To'] = email
-    mail['To'] = "gomezrbz@gmail.com"
+    mail['To'] = [
+        admin.email for admin in Admin.query.filter_by(status=True).all()]
+    print(mail['To'])
     mail['Subject'] = f'''Factura de número de reservación {booking.booking_number}'''
     mail.add_header('Content-Type', 'text/html',)
 
