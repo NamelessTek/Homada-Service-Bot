@@ -19,7 +19,6 @@ def send_email(booking: str, email: str) -> None:
     mail['From'] = Config.MAIL_EMAIL
     mail['To'] = [
         admin.email for admin in Admin.query.filter_by(status=True).all()]
-    print(mail['To'])
     mail['Subject'] = f'''Factura de número de reservación {booking.booking_number}'''
     mail.add_header('Content-Type', 'text/html',)
 

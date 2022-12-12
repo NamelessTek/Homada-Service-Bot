@@ -34,7 +34,7 @@ def create_client(name: str, phone: str, email: str) -> Client:
 
         return client
     except Exception as e:
-        print(f"Error: {e}")
+        print(f"Create Client Error: {e}")
 
 
 def create_client_carga_masiva(name: str, phone: str, email: str) -> Client:
@@ -138,7 +138,7 @@ def flow_network(client: int, booking: int, ubicacion: int) -> list:
     '''
     if client:
         if booking:
-            
+
             messages = []
             messages.extend(
                 [f'''¡Hola {client.name}! Gracias por elegir Homada.
@@ -178,7 +178,7 @@ def flow_ubicacion(client: int, booking: int, ubicacion: int) -> list:
     '''
     Conversation flow sending the location data to the user
     '''
-    
+
     messages = []
     if client:
         if booking:
