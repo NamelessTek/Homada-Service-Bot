@@ -89,7 +89,6 @@ def flow_facturacion(incoming_message: str, booking) -> str:
             case 10:
                 if validate_email(incoming_message):
                     session['email_cliente'] = incoming_message
-                    print(session['email_cliente'])
                     session['review_client_email'] = True
                 else:
                     messages.append("El correo electrónico no es válido 😟")

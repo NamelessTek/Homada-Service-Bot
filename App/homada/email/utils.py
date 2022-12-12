@@ -50,7 +50,7 @@ def send_email(booking: str, email: str) -> None:
 
     <h2>Hola equipo Homada!</h2>
 
-    El cliente {client.name} con el número de reservación {booking.booking_number} ha solicitado su factura. Te anexamos su constancia fiscal, y este es su contacto.
+    El cliente {client.name} con el número de reservación <b>{booking.booking_number}</b> ha solicitado su factura. Te anexamos su constancia fiscal, y este es su contacto.
 
     <table>
         <tr>
@@ -61,7 +61,7 @@ def send_email(booking: str, email: str) -> None:
         </tr>
         <tr>
             <td>{client.name}</td>
-            <td>{client.email}</td>
+            <td>{client.email if client.email else session['email_cliente']}</td>
             <td>{client.phone}</td>
             <td>{ubicacion.ubicacion}</td>
         </tr>
