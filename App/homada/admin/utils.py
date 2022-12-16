@@ -84,12 +84,18 @@ def conversations_admin(incoming_message: str) -> list[str]:
                             question_id).question)
                         return messages
                 case 7:
-
                     session['ubicacion_cliente'] = incoming_message
                     ubicacion_query = Ubicacion.query.filter_by(
                         ubicacion=session['ubicacion_cliente']).first()
-                    session['hr_llegada_cliente'] = ubicacion_query.arrival_time
-                    session['hr_salida_cliente'] = ubicacion_query.departure_time
+                    if ubicacion_query:
+                        session['hr_llegada_cliente'] = ubicacion_query.arrival_time
+                        session['hr_salida_cliente'] = ubicacion_query.departure_time
+                    else:
+                        print(similar_ubicacion())
+                        messages.append(similar_ubicacion())
+                        messages.append(Questions.query.get(
+                            question_id).question)
+                        return messages
                 case _:
                     pass
 

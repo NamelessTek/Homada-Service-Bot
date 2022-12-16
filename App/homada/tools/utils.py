@@ -74,6 +74,18 @@ def validate_date(date: str) -> bool:
         return False
 
 
+def similar_ubicacion() -> str:
+    '''
+    Return a list of similar ubicaciones
+    '''
+    similar_ubicaciones = Ubicacion.query.filter(Ubicacion.ubicacion.op(
+        'REGEXP')(f'{session["ubicacion_cliente"]}')).limit(5)
+    if similar_ubicaciones.count() == 0:
+        return 'No hay ubicaciones similares, por favor intenta de nuevo.'
+    else:
+        return f'Quizás quisiste decir:{chr(10)*2}{chr(10).join([f"{(index+1)}. {similar_ubicacion.ubicacion}" for index, similar_ubicacion in enumerate(similar_ubicaciones)])}'
+
+
 def font_weight(style: str, text: str) -> None:
     '''
     Return the text with:
