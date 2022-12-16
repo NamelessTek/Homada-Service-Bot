@@ -34,7 +34,7 @@ services:
     restart: always
     build: .
     ports:
-      - 5555:5000
+      - 5555:5555
     volumes:
       - ./App:/homada_bot/App
     networks:

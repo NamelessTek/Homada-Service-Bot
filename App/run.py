@@ -12,6 +12,7 @@ from flask_admin.contrib.sqla import ModelView
 app = create_app()
 admin = Admin(app)
 
+
 class ModifiedView(ModelView):
     form_excluded_columns = ['bookings',
                              'creation_date', 'last_update', 'status']
@@ -35,4 +36,4 @@ def handle_exception(e):
 
 if __name__ == '__main__':
     app.run(host="0.0.0.0", debug=True,
-            use_reloader=True, use_debugger=True)
+            use_reloader=True, use_debugger=True, port=5555)
